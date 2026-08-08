@@ -205,6 +205,26 @@
         .status-partial { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
         .status-full { background-color: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
 
+        .freeze-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            background-color: #dc3545;
+            color: #ffffff;
+            box-shadow: 0 1px 3px rgba(220, 53, 69, 0.3);
+        }
+        .normal-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            background-color: #10b981;
+            color: #ffffff;
+        }
+
         .bar-container { margin-bottom: 14px; }
         .bar-label {
             display: flex;
@@ -382,7 +402,7 @@
             <strong>⚠️ 重要配合與系統管制事項提醒：</strong>
             <ol style="margin: 8px 0 0 0; padding-left: 20px;">
                 <li><strong>回覆期限：</strong>請相關業務單位協助於 <strong><u>指定期限前</u></strong> 說明久置庫存預計提貨時程。</li>
-                <li><strong>出口凍結規定：</strong>依放行規定，貨物逾期未完成提貨登記作業者，系統將自動啟動預警機制。</li>
+                <li><strong>出口凍結規定：若久置總量 ≧ 3,500 MT 或最大庫齡 ≧ 151 天，系統將自動啟動出口凍結機制。</strong></li>
             </ol>
         </div>
 
@@ -400,10 +420,11 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>來源廠區</th>
-                                    <th>地區</th>
-                                    <th>久置庫存量 (MT)</th>
-                                    <th>佔比 (%)</th>
+                                    <th style="width: 22%;">來源廠區</th>
+                                    <th style="width: 18%;">地區</th>
+                                    <th style="width: 28%;">最大庫齡區間</th>
+                                    <th style="width: 18%;">久置庫存量 (MT)</th>
+                                    <th style="width: 14%;">佔比 (%)</th>
                                 </tr>
                             </thead>
                             <tbody id="dynamic-summary-tbody">
@@ -535,7 +556,7 @@
                             <th onclick="sortTable('age')">久置庫齡區間 <span class="sort-icon" id="sort-age">▼</span></th>
                             <th onclick="sortTable('qty')">久置數量 (MT) <span class="sort-icon" id="sort-qty">⇅</span></th>
                             <th onclick="sortTable('amount')">久置金額 (USD) <span class="sort-icon" id="sort-amount">⇅</span></th>
-                            <th>📝 業務處置說明歷程</th>
+                            <th>📝 業務處理歷程</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
@@ -574,7 +595,7 @@
 <div class="modal-overlay" id="noteModalOverlay">
     <div class="modal-box">
         <div class="modal-header">
-            <h3>📝 業務處置說明歷程紀錄與追蹤</h3>
+            <h3>📝 業務處理歷程紀錄與追蹤</h3>
             <button class="modal-close-btn" onclick="closeNoteModal()">&times;</button>
         </div>
         <div class="modal-body">
@@ -649,15 +670,35 @@
         return "age-60-120";
     }
 
+    function getWorstAgeStr(ageList) {
+        if (!ageList || ageList.length === 0) return "-";
+        let worstAge = ageList[0];
+        let minRank = ageRank[worstAge] || 99;
+        ageList.forEach(a => {
+            const r = ageRank[a] || 99;
+            if (r < minRank) {
+                minRank = r;
+                worstAge = a;
+            }
+        });
+        return worstAge;
+    }
+
     function renderDynamicBaselineSummary() {
         const grandTotalQty = overdueData.reduce((sum, d) => sum + d.qty, 0);
         let plantRegionMap = {};
         let regionTotals = { "美東": 0, "美西": 0 };
+        let grandAgeList = [];
 
         overdueData.forEach(d => {
+            grandAgeList.push(d.age);
             if (!plantRegionMap[d.plant]) plantRegionMap[d.plant] = {};
-            if (!plantRegionMap[d.plant][d.region]) plantRegionMap[d.plant][d.region] = 0;
-            plantRegionMap[d.plant][d.region] += d.qty;
+            if (!plantRegionMap[d.plant][d.region]) {
+                plantRegionMap[d.plant][d.region] = { qty: 0, ages: [] };
+            }
+            plantRegionMap[d.plant][d.region].qty += d.qty;
+            plantRegionMap[d.plant][d.region].ages.push(d.age);
+            
             if (regionTotals[d.region] !== undefined) regionTotals[d.region] += d.qty;
             else regionTotals[d.region] = d.qty;
         });
@@ -670,30 +711,67 @@
             const regions = plantRegionMap[plantKey];
             const regionKeys = Object.keys(regions);
             let plantSubtotal = 0;
+            let plantAgeList = [];
 
             regionKeys.forEach((rKey, idx) => {
-                const qty = regions[rKey];
+                const regData = regions[rKey];
+                const qty = regData.qty;
                 plantSubtotal += qty;
+                plantAgeList.push(...regData.ages);
+
                 const ratio = grandTotalQty > 0 ? ((qty / grandTotalQty) * 100).toFixed(2) : "0.00";
+                const worstAge = getWorstAgeStr(regData.ages);
+                const ageBadgeClass = getAgeBadgeClass(worstAge);
 
                 const tr = document.createElement("tr");
                 let plantTd = idx === 0 ? `<td rowspan="${regionKeys.length}" class="text-bold" style="vertical-align: middle;">${plantKey}</td>` : "";
-                tr.innerHTML = `${plantTd}<td>${rKey}</td><td class="text-right">${qty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td><td>${ratio}%</td>`;
+                tr.innerHTML = `
+                    ${plantTd}
+                    <td>${rKey}</td>
+                    <td><span class="badge-age ${ageBadgeClass}">${worstAge}</span></td>
+                    <td class="text-right">${qty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    <td>${ratio}%</td>
+                `;
                 tbody.appendChild(tr);
             });
 
             plantTotals[plantKey] = plantSubtotal;
             const subRatio = grandTotalQty > 0 ? ((plantSubtotal / grandTotalQty) * 100).toFixed(2) : "0.00";
+            const plantWorstAge = getWorstAgeStr(plantAgeList);
+            const plantBadgeClass = getAgeBadgeClass(plantWorstAge);
+
             const trSub = document.createElement("tr");
             trSub.className = "total-row";
-            trSub.innerHTML = `<td>${plantKey} 小計</td><td>-</td><td class="text-right">${plantSubtotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td><td>${subRatio}%</td>`;
+            trSub.innerHTML = `
+                <td>${plantKey} 小計</td>
+                <td>-</td>
+                <td><span class="badge-age ${plantBadgeClass}">${plantWorstAge}</span></td>
+                <td class="text-right">${plantSubtotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td>${subRatio}%</td>
+            `;
             tbody.appendChild(trSub);
         });
+
+        const grandWorstAge = getWorstAgeStr(grandAgeList);
+        const isQtyOver = grandTotalQty >= 3500;
+        const isAgeOver = isOver151Days(grandWorstAge);
+        let freezeStatusHtml = `<span class="normal-badge">🟢 正常放行</span>`;
+
+        if (isQtyOver || isAgeOver) {
+            let reasonStr = isQtyOver && isAgeOver ? "數量≧3,500MT 且 庫齡≧151天" : (isQtyOver ? "數量≧3,500MT" : "庫齡≧151天");
+            freezeStatusHtml = `<span class="freeze-badge">🔒 凍結出口 (${reasonStr})</span>`;
+        }
 
         const trTotal = document.createElement("tr");
         trTotal.className = "total-row";
         trTotal.style = "background-color: #1f4e78 !important; color: #ffffff;";
-        trTotal.innerHTML = `<td>久置總計 (TTL)</td><td>跨區加總</td><td class="text-right">${grandTotalQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td><td>100.00%</td>`;
+        trTotal.innerHTML = `
+            <td>久置總計 (TTL)</td>
+            <td>跨區加總</td>
+            <td>${freezeStatusHtml}</td>
+            <td class="text-right">${grandTotalQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            <td>100.00%</td>
+        `;
         tbody.appendChild(trTotal);
 
         const chartContainer = document.getElementById("dynamic-charts-container");
@@ -724,7 +802,6 @@
         chartContainer.innerHTML = chartHtml;
     }
 
-    // ⭐️ 核心修正：嚴格維護固定 5 個 td 欄位結構，消除縱向對齊錯位
     function renderDynamicRatioAnalysisTable() {
         const grandTotalQty = overdueData.reduce((sum, d) => sum + d.qty, 0);
         let groupsMap = {};
@@ -748,7 +825,6 @@
 
         const filteredGroupList = isRatioShowAll ? groupList : groupList.filter(g => isOver151Days(g.age));
 
-        // 按廠區聚合
         let plantGroups = {};
         filteredGroupList.forEach(g => {
             if (!plantGroups[g.plant]) plantGroups[g.plant] = [];
@@ -758,7 +834,6 @@
         const tbody = document.getElementById("ratio-analysis-tbody");
         tbody.innerHTML = "";
 
-        // 按廠區名稱排序輸出（確保廠區 A 在上、廠區 B 在下）
         const plantNames = Object.keys(plantGroups).sort();
 
         plantNames.forEach(plantName => {
@@ -790,7 +865,6 @@
 
                 const tr = document.createElement("tr");
 
-                // 第一行：生成 5 個 <td>（含 rowspan 廠區欄）
                 if (idx === 0) {
                     const bgStyle = (plantName.includes("廠區 B")) ? "background-color: #fafbfc;" : "";
                     tr.innerHTML = `
@@ -811,9 +885,7 @@
                             </div>
                         </td>
                     `;
-                } 
-                // 非第一行：生成 4 個 <td>（吃第一行的 rowspan）
-                else {
+                } else {
                     tr.innerHTML = `
                         <td><span class="badge-age ${badgeClass}">${g.age}</span></td>
                         <td>${g.wh}</td>
