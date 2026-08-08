@@ -390,7 +390,7 @@
     <div class="header">
         <h1>【系統通知】海外倉久置庫存與處置提醒 (去敏公開示範版)</h1>
         <div class="header-meta">
-            發信日期：2026年8月5日 16:46 | 國際業務處通知
+            發信日期：2026年8月5日 16:46 | 國際事務處通知
         </div>
     </div>
 
@@ -420,7 +420,7 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th style="width: 22%;">來源廠區</th>
+                                    <th style="width: 22%;">廠區</th>
                                     <th style="width: 18%;">地區</th>
                                     <th style="width: 28%;">最大庫齡區間</th>
                                     <th style="width: 18%;">久置庫存量 (MT)</th>
@@ -453,9 +453,9 @@
                     <table id="ratio-analysis-table">
                         <thead>
                             <tr>
-                                <th style="width: 14%;">來源廠區</th>
+                                <th style="width: 14%;">廠區</th>
                                 <th style="width: 14%;">久置庫齡區間</th>
-                                <th style="width: 24%;">倉庫名稱 (Warehouse)</th>
+                                <th style="width: 24%;">倉庫名稱</th>
                                 <th style="width: 14%;">久置數量 (MT)</th>
                                 <th style="width: 34%;">久置庫齡比例 (%) [包含處置說明填寫進度與最新時間]</th>
                             </tr>
@@ -495,8 +495,8 @@
                     </div>
 
                     <div class="filter-group">
-                        <label for="filter-location">🏢 LOCATION (倉庫)</label>
-                        <select id="filter-location" onchange="applyFilters()"><option value="ALL">全部倉庫 (All)</option></select>
+                        <label for="filter-location">🏢 倉庫地點</label>
+                        <select id="filter-location" onchange="applyFilters()"><option value="ALL">全部倉庫地點 (All)</option></select>
                     </div>
 
                     <div class="filter-group">
@@ -549,7 +549,7 @@
                             <th onclick="sortTable('plant')">廠區 <span class="sort-icon" id="sort-plant">⇅</span></th>
                             <th onclick="sortTable('sales')">業務 <span class="sort-icon" id="sort-sales">⇅</span></th>
                             <th onclick="sortTable('region')">地區 <span class="sort-icon" id="sort-region">⇅</span></th>
-                            <th onclick="sortTable('location')">LOCATION <span class="sort-icon" id="sort-location">⇅</span></th>
+                            <th onclick="sortTable('location')">倉庫地點 <span class="sort-icon" id="sort-location">⇅</span></th>
                             <th onclick="sortTable('wh')">倉庫名稱 <span class="sort-icon" id="sort-wh">⇅</span></th>
                             <th onclick="sortTable('item')">料號 <span class="sort-icon" id="sort-item">⇅</span></th>
                             <th onclick="sortTable('batch')">批號 <span class="sort-icon" id="sort-batch">⇅</span></th>
@@ -775,7 +775,7 @@
         tbody.appendChild(trTotal);
 
         const chartContainer = document.getElementById("dynamic-charts-container");
-        let chartHtml = `<div><h4 style="margin: 0 0 12px 0; color:#1f4e78; font-size: 14px;">📊 來源廠區分佈 (總計：${grandTotalQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} MT)</h4>`;
+        let chartHtml = `<div><h4 style="margin: 0 0 12px 0; color:#1f4e78; font-size: 14px;">📊 廠區分佈 (總計：${grandTotalQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} MT)</h4>`;
 
         Object.keys(plantTotals).forEach(pKey => {
             const pQty = plantTotals[pKey];
@@ -972,7 +972,7 @@
         if (item) {
             document.getElementById("modalTargetRowId").value = rowId;
             document.getElementById("modalTargetInfo").innerHTML = `
-                <strong>👤 責任業務：</strong>${item.sales} | <strong>🏭 廠區：</strong>${item.plant} | <strong>📍 地區：</strong>${item.region} | <strong>🏢 LOCATION：</strong>${item.location}<br>
+                <strong>👤 責任業務：</strong>${item.sales} | <strong>🏭 廠區：</strong>${item.plant} | <strong>📍 地區：</strong>${item.region} | <strong>🏢 倉庫地點：</strong>${item.location}<br>
                 <strong>🏬 倉庫名稱：</strong>${item.wh} | <strong>📦 料號：</strong>${item.item} | <strong>🏷️ 批號：</strong>${item.batch}<br>
                 <strong>📊 久置數量：</strong>${item.qty.toFixed(2)} MT | <strong>⏳ 庫齡：</strong>${item.age}
             `;
