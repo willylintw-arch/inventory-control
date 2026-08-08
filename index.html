@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>海外倉久置庫存與處理管理表（資料去敏版）</title>
+    <title>海外倉久置庫存追蹤管控表（資料去敏版）</title>
     <style>
         * {
             box-sizing: border-box;
@@ -28,7 +28,7 @@
             border: 1px solid #e1e4e8;
         }
         
-        /* ⭐️ Header 響應式排版 */
+        /* Header 響應式排版 */
         .header {
             background: linear-gradient(135deg, #183c5e 0%, #254a7c 100%);
             color: #ffffff;
@@ -50,7 +50,7 @@
             color: #b0cbe8;
         }
         
-        /* ⭐️ 商務專業融合風格 Segment Control */
+        /* 商務專業融合風格 Segment Control */
         .header-warehouse-type {
             display: flex;
             align-items: center;
@@ -149,7 +149,7 @@
             transition: max-height 0.3s ease-out;
         }
 
-        /* ⭐️ 兩欄網格動態適應 */
+        /* 兩欄網格動態適應 */
         .merged-grid {
             display: flex;
             gap: 20px;
@@ -444,7 +444,7 @@
         .age-151-210 { background-color: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
         .age-210-plus { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; font-weight: 700; }
 
-        /* ⭐️ 篩選面板自適應網格 */
+        /* 篩選面板自適應網格 */
         .filter-panel {
             background-color: #f0f4f8; border: 1px solid #cbd5e1; border-radius: 8px; padding: 22px 26px; margin-bottom: 20px;
         }
@@ -476,9 +476,81 @@
         }
         .btn-more:hover { background-color: #163754; transform: translateY(-1px); }
         
+        /* ⭐️ 附件管理區塊樣式 (依據截圖重新設計) */
+        .attachment-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            margin-bottom: 12px;
+        }
+        .attachment-table th {
+            background-color: #f8fafc;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            padding: 9px 12px;
+            font-size: 13.5px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .attachment-table td {
+            border: 1px solid #e2e8f0;
+            padding: 9px 12px;
+            font-size: 13.5px;
+            color: #334155;
+            text-align: center;
+        }
+        .attachment-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .attachment-rules {
+            color: #dc2626;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .attachment-btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-attach-browse {
+            background-color: #eab308;
+            color: #0f172a;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 4px;
+            font-size: 13.5px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+        .btn-attach-browse:hover { background-color: #ca8a04; color: #ffffff; }
+        .btn-attach-delete {
+            background-color: #dc2626;
+            color: #ffffff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 4px;
+            font-size: 13.5px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+        .btn-attach-delete:hover { background-color: #b91c1c; }
+
         .footer { background-color: #f8f9fa; border-top: 1px solid #e1e4e8; padding: 16px 30px; font-size: 13px; color: #6c757d; text-align: center; }
 
-        /* ⭐️ RWD 響應式設備（手機、平板、小螢幕筆電）適應規則 */
+        /* RWD 響應式設備適應規則 */
         @media (max-width: 992px) {
             .merged-grid {
                 flex-direction: column;
@@ -492,6 +564,8 @@
             .content { padding: 16px 20px; }
             .filter-panel { padding: 16px; }
             .kpi-value { font-size: 18px; }
+            .attachment-toolbar { flex-direction: column; align-items: flex-start; }
+            .attachment-btn-group { width: 100%; justify-content: flex-end; }
         }
     </style>
 </head>
@@ -501,13 +575,13 @@
     <!-- Header -->
     <div class="header">
         <div class="header-title-box">
-            <h1>海外倉久置庫存與處理管理表（資料去敏版）</h1>
+            <h1>海外倉久置庫存追蹤管控表（資料去敏版）</h1>
             <div class="header-meta">
                 發信日期：2026年8月5日 16:46 | 國際事務處通知
             </div>
         </div>
         
-        <!-- ⭐️ 融合專業商務風 Segment Control 國外倉切換器 -->
+        <!-- 融合專業商務風 Segment Control 國外倉切換器 -->
         <div class="header-warehouse-type">
             <span class="header-warehouse-label">🌐 國外倉類別</span>
             <div class="warehouse-btn-group">
@@ -680,7 +754,7 @@
                             <th onclick="sortTable('age')">久置庫齡區間 <span class="sort-icon" id="sort-age">▼</span></th>
                             <th onclick="sortTable('qty')">久置數量 (MT) <span class="sort-icon" id="sort-qty">⇅</span></th>
                             <th onclick="sortTable('amount')">久置金額 (USD) <span class="sort-icon" id="sort-amount">⇅</span></th>
-                            <th>📝 業務處理歷程</th>
+                            <th>📝 處理歷程</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
@@ -696,16 +770,50 @@
             </div>
         </div>
 
-        <!-- Section 3: File Download -->
+        <!-- Section 3: Attachment Management (重新設計) -->
         <div class="section-header" onclick="toggleSection('sec-4-body', 'sec-4-btn')">
-            <div class="section-title">📥 三、備份明細檔案下載</div>
+            <div class="section-title">📎 三、附件管理</div>
             <span class="btn-collapse" id="sec-4-btn">➖ 收合區塊</span>
         </div>
         <div id="sec-4-body" class="collapsible-body">
-            <p style="font-size: 14px; color: #555;">如需進一步查閱備份歷史資料，請點擊下方示範按鈕：</p>
-            <div style="text-align: center; margin: 20px 0;">
-                <button style="padding: 10px 20px; background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-size: 14px;">📄 示範數據檔 (去敏化版).xlsx</button>
+            
+            <div class="table-responsive">
+                <table class="attachment-table" style="min-width: 900px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"><input type="checkbox" id="attach-check-all"></th>
+                            <th style="width: 60px;">NO.</th>
+                            <th style="width: 30%;">上傳檔名</th>
+                            <th style="width: 15%;">檔案大小</th>
+                            <th style="width: 25%;">備註</th>
+                            <th style="width: 12%;">上傳者</th>
+                            <th style="width: 18%;">上傳日期與時間</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>1</td>
+                            <td style="text-align: left; color: #1d4ed8; font-weight: bold; cursor: pointer;">📄 海外倉久置庫存備份明細_20260805.xlsx</td>
+                            <td>2.45 MB</td>
+                            <td style="text-align: left;">去敏版歷史對齊原始檔</td>
+                            <td>系統管理員</td>
+                            <td>2026/08/05 16:46:12</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
+
+            <div class="attachment-toolbar">
+                <div class="attachment-rules">
+                    允許的檔案副檔名 .png 、.jpg 、.doc 、.docx 、.xls 、.xlsx 、.ppt 、.pptx 、.pdf 、.zip 、.rar 、.msg 、.eml
+                </div>
+                <div class="attachment-btn-group">
+                    <button class="btn-attach-browse" onclick="alert('開啟檔案瀏覽器...')">📁 瀏覽檔案</button>
+                    <button class="btn-attach-delete" onclick="alert('請勾選欲刪除的附件！')">🗑️ 刪除</button>
+                </div>
+            </div>
+
         </div>
 
     </div>
@@ -719,7 +827,7 @@
 <div class="modal-overlay" id="noteModalOverlay">
     <div class="modal-box">
         <div class="modal-header">
-            <h3>📝 業務處理歷程紀錄與追蹤</h3>
+            <h3>📝 處理歷程紀錄與追蹤</h3>
             <button class="modal-close-btn" onclick="closeNoteModal()">&times;</button>
         </div>
         <div class="modal-body">
@@ -1329,6 +1437,15 @@
         renderDynamicRatioAnalysisTable();
         applyFilters();
         setupTableClickHighlight();
+
+        // 附件全選功能
+        const checkAll = document.getElementById('attach-check-all');
+        if (checkAll) {
+            checkAll.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.attachment-table tbody input[type="checkbox"]');
+                checkboxes.forEach(cb => cb.checked = checkAll.checked);
+            });
+        }
     }
 
     window.onload = initDynamicDashboard;
