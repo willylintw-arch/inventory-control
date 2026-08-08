@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>(更新至8/5) 通知久置貨物與處置提醒 [去敏展示版]</title>
+    <title>海外倉久置庫存與處理管理表（資料去敏版）</title>
     <style>
         body {
             font-family: 'PingFang TC', 'Microsoft JhengHei', 'Helvetica Neue', Arial, sans-serif;
@@ -11,6 +11,7 @@
             padding: 20px;
             color: #333333;
             line-height: 1.6;
+            font-size: 14.5px;
         }
         .email-container {
             width: 96vw;
@@ -26,17 +27,65 @@
             background: linear-gradient(135deg, #1f4e78 0%, #2f5597 100%);
             color: #ffffff;
             padding: 24px 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .header h1 {
-            margin: 0 0 10px 0;
-            font-size: 22px;
+        .header-title-box h1 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
             font-weight: 700;
             letter-spacing: 0.5px;
         }
         .header-meta {
-            font-size: 13px;
+            font-size: 14px;
             color: #d0e1f9;
         }
+        
+        /* ⭐️ 國外倉類別按鈕區塊樣式 */
+        .header-warehouse-type {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 10px;
+            padding: 10px 16px;
+            text-align: right;
+            backdrop-filter: blur(4px);
+        }
+        .header-warehouse-label {
+            font-size: 13px;
+            color: #d0e1f9;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        .warehouse-btn-group {
+            display: flex;
+            gap: 8px;
+        }
+        .wh-type-btn {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 15px; /* 大字體 */
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        .wh-type-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+        /* 選中狀態：顯眼對比的亮黃底 + 深藍字 */
+        .wh-type-btn.active {
+            background-color: #fbbf24 !important;
+            color: #1f4e78 !important;
+            border-color: #f59e0b !important;
+            box-shadow: 0 3px 8px rgba(251, 191, 36, 0.4);
+        }
+
         .content {
             padding: 30px 35px;
         }
@@ -44,9 +93,10 @@
             background-color: #f8d7da;
             border-left: 5px solid #dc3545;
             color: #842029;
-            padding: 16px 20px;
+            padding: 18px 22px;
             margin-bottom: 25px;
             border-radius: 4px;
+            font-size: 15px;
         }
 
         .section-header {
@@ -61,17 +111,17 @@
             user-select: none;
         }
         .section-title {
-            font-size: 17px;
+            font-size: 18px;
             font-weight: bold;
             color: #1f4e78;
             margin: 0;
         }
         .btn-collapse {
-            font-size: 13px;
+            font-size: 13.5px;
             color: #2f5597;
             background-color: #e8eef5;
             border: 1px solid #cbd5e1;
-            padding: 4px 12px;
+            padding: 5px 14px;
             border-radius: 12px;
             font-weight: bold;
             transition: all 0.2s;
@@ -99,7 +149,7 @@
             background-color: #fafbfc;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
-            padding: 16px 20px;
+            padding: 18px 22px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -112,34 +162,46 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
+            font-size: 14px;
             table-layout: fixed;
         }
         th {
             background-color: #2f5597;
             color: #ffffff;
-            padding: 10px 10px;
+            padding: 12px 10px;
             text-align: center;
             font-weight: 600;
             white-space: nowrap;
             cursor: pointer;
             user-select: none;
+            font-size: 14.5px;
             transition: background-color 0.2s;
         }
         th:hover { background-color: #1f4e78; }
         th .sort-icon {
-            font-size: 11px;
+            font-size: 12px;
             margin-left: 3px;
             opacity: 0.8;
         }
         td {
-            padding: 8px 10px;
+            padding: 10px 10px;
             border-bottom: 1px solid #e9ecef;
             border-right: 1px solid #f1f5f9;
             text-align: center;
             white-space: nowrap;
+            transition: background-color 0.15s ease;
         }
         tr:nth-child(even) td { background-color: #f8f9fa; }
+        
+        tr.selected-row td {
+            background-color: #fef3c7 !important;
+            color: #78350f !important;
+            font-weight: bold;
+        }
+        tr.selected-row td:first-child {
+            border-left: 4px solid #d97706 !important;
+        }
+
         .text-right { text-align: right; }
         .text-bold { font-weight: bold; }
         .total-row td {
@@ -155,7 +217,7 @@
             margin-bottom: 8px;
         }
         .table-title {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: bold;
             color: #1f4e78;
             display: flex;
@@ -165,9 +227,9 @@
 
         .badge-sales {
             display: inline-block;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 10px;
-            font-size: 11.5px;
+            font-size: 12px;
             font-weight: bold;
             background-color: #e2e8f0;
             color: #1e293b;
@@ -180,9 +242,10 @@
             background-color: #eff6ff;
             color: #1d4ed8;
             border: 1px solid #bfdbfe;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 12px;
             font-weight: bold;
+            font-size: 13px;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -195,9 +258,9 @@
 
         .status-badge {
             display: inline-block;
-            padding: 2px 7px;
+            padding: 3px 8px;
             border-radius: 10px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
             margin-bottom: 2px;
         }
@@ -207,9 +270,9 @@
 
         .freeze-badge {
             display: inline-block;
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 12px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
             background-color: #dc3545;
             color: #ffffff;
@@ -217,29 +280,30 @@
         }
         .normal-badge {
             display: inline-block;
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 12px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
             background-color: #10b981;
             color: #ffffff;
         }
 
-        .bar-container { margin-bottom: 14px; }
+        .bar-container { margin-bottom: 16px; }
         .bar-label {
             display: flex;
             justify-content: space-between;
-            font-size: 12.5px;
+            font-size: 13.5px;
             font-weight: 600;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
         }
         .bar-wrapper {
             background-color: #e9ecef;
-            height: 18px;
-            border-radius: 9px;
+            height: 20px;
+            border-radius: 10px;
             overflow: hidden;
         }
-        .bar-fill-dynamic { background-color: #2f5597; height: 100%; border-radius: 9px; transition: width 0.4s ease; }
+        .bar-fill-plant-a { background-color: #2f5597; height: 100%; border-radius: 10px; transition: width 0.4s ease; }
+        .bar-fill-plant-b { background-color: #d97706; height: 100%; border-radius: 10px; transition: width 0.4s ease; }
 
         .mini-bar-wrapper {
             background-color: #e2e8f0;
@@ -265,7 +329,7 @@
         .region-card {
             flex: 1;
             background: #ffffff;
-            padding: 10px 12px;
+            padding: 12px 14px;
             border-radius: 6px;
             border: 1px solid #cbd5e1;
             text-align: center;
@@ -275,10 +339,10 @@
             background-color: #28a745;
             color: #ffffff;
             border: none;
-            padding: 5px 12px;
+            padding: 6px 14px;
             border-radius: 15px;
             cursor: pointer;
-            font-size: 11.5px;
+            font-size: 12.5px;
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: all 0.2s;
@@ -314,41 +378,41 @@
             padding: 16px 20px;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .modal-header h3 { margin: 0; font-size: 16px; }
+        .modal-header h3 { margin: 0; font-size: 17px; }
         .modal-close-btn { background: none; border: none; color: #ffffff; font-size: 22px; cursor: pointer; font-weight: bold; }
         .modal-body { padding: 20px; max-height: 70vh; overflow-y: auto; }
         .modal-info-bar {
-            background-color: #f0f4f8; padding: 10px 14px; border-radius: 6px;
-            font-size: 12.5px; color: #1f4e78; margin-bottom: 15px; line-height: 1.6; border: 1px solid #cbd5e1;
+            background-color: #f0f4f8; padding: 12px 16px; border-radius: 6px;
+            font-size: 13.5px; color: #1f4e78; margin-bottom: 15px; line-height: 1.6; border: 1px solid #cbd5e1;
         }
 
         .history-list { margin-bottom: 15px; }
         .history-item {
             background-color: #fafbfc; border: 1px solid #e1e4e8; border-left: 4px solid #1f4e78;
-            border-radius: 4px; padding: 10px 14px; margin-bottom: 10px;
+            border-radius: 4px; padding: 12px 16px; margin-bottom: 10px;
         }
-        .history-time { font-size: 11.5px; font-weight: bold; color: #64748b; margin-bottom: 4px; }
-        .history-text { font-size: 13px; color: #333333; white-space: pre-wrap; word-break: break-word; }
+        .history-time { font-size: 12px; font-weight: bold; color: #64748b; margin-bottom: 4px; }
+        .history-text { font-size: 14px; color: #333333; white-space: pre-wrap; word-break: break-word; }
         .btn-add-row {
-            background-color: #2f5597; color: #ffffff; border: none; padding: 6px 14px;
-            border-radius: 4px; cursor: pointer; font-size: 12.5px; font-weight: bold; margin-bottom: 12px;
+            background-color: #2f5597; color: #ffffff; border: none; padding: 7px 16px;
+            border-radius: 4px; cursor: pointer; font-size: 13.5px; font-weight: bold; margin-bottom: 12px;
             display: inline-flex; align-items: center; gap: 4px;
         }
         .btn-add-row:hover { background-color: #1f4e78; }
         .modal-textarea {
-            width: 100%; height: 80px; padding: 10px; border: 1px solid #cbd5e1;
-            border-radius: 4px; font-family: inherit; font-size: 13px; box-sizing: border-box; outline: none; resize: vertical;
+            width: 100%; height: 85px; padding: 10px; border: 1px solid #cbd5e1;
+            border-radius: 4px; font-family: inherit; font-size: 14px; box-sizing: border-box; outline: none; resize: vertical;
         }
         .modal-textarea:focus { border-color: #2f5597; box-shadow: 0 0 0 2px rgba(47, 85, 151, 0.15); }
         .modal-footer {
             padding: 12px 20px 18px 20px; display: flex; justify-content: flex-end; gap: 10px;
             background-color: #f8f9fa; border-top: 1px solid #e1e4e8;
         }
-        .btn-modal-save { background-color: #28a745; color: #ffffff; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
-        .btn-modal-cancel { background-color: #64748b; color: #ffffff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+        .btn-modal-save { background-color: #28a745; color: #ffffff; border: none; padding: 9px 22px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .btn-modal-cancel { background-color: #64748b; color: #ffffff; border: none; padding: 9px 18px; border-radius: 4px; cursor: pointer; font-size: 14px; }
 
         .badge-age {
-            display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11.5px; font-weight: 600; white-space: nowrap;
+            display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12.5px; font-weight: 600; white-space: nowrap;
         }
         .age-60-120 { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
         .age-121-150 { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
@@ -356,31 +420,31 @@
         .age-210-plus { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; font-weight: 700; }
 
         .filter-panel {
-            background-color: #f0f4f8; border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px 24px; margin-bottom: 20px;
+            background-color: #f0f4f8; border: 1px solid #cbd5e1; border-radius: 8px; padding: 22px 26px; margin-bottom: 20px;
         }
-        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 18px; }
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin-bottom: 18px; }
         .filter-group { display: flex; flex-direction: column; }
-        .filter-group label { font-size: 12.5px; font-weight: bold; color: #1f4e78; margin-bottom: 6px; }
+        .filter-group label { font-size: 13.5px; font-weight: bold; color: #1f4e78; margin-bottom: 6px; }
         .filter-group select {
-            padding: 8px 10px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 13.5px; background-color: #ffffff; color: #333333; outline: none;
+            padding: 9px 12px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 14px; background-color: #ffffff; color: #333333; outline: none;
         }
         .filter-group select:focus { border-color: #2f5597; box-shadow: 0 0 0 2px rgba(47, 85, 151, 0.2); }
         .kpi-cards { display: flex; gap: 18px; margin-bottom: 15px; }
-        .kpi-card { flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 14px; text-align: center; }
-        .kpi-title { font-size: 12.5px; color: #64748b; }
-        .kpi-value { font-size: 21px; font-weight: bold; color: #1f4e78; margin-top: 4px; }
+        .kpi-card { flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 16px; text-align: center; }
+        .kpi-title { font-size: 13px; color: #64748b; }
+        .kpi-value { font-size: 22px; font-weight: bold; color: #1f4e78; margin-top: 4px; }
         .btn-reset {
-            background-color: #64748b; color: #ffffff; border: none; padding: 8px 18px; border-radius: 4px; cursor: pointer; font-size: 12.5px; font-weight: bold; transition: background 0.2s;
+            background-color: #64748b; color: #ffffff; border: none; padding: 9px 20px; border-radius: 4px; cursor: pointer; font-size: 13.5px; font-weight: bold; transition: background 0.2s;
         }
         .btn-reset:hover { background-color: #475569; }
 
         .more-btn-wrapper { text-align: center; margin-top: 15px; margin-bottom: 20px; }
         .btn-more {
-            background-color: #1f4e78; color: #ffffff; border: none; padding: 10px 28px; border-radius: 20px; cursor: pointer; font-size: 13.5px; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: all 0.2s ease;
+            background-color: #1f4e78; color: #ffffff; border: none; padding: 11px 30px; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: all 0.2s ease;
         }
         .btn-more:hover { background-color: #163754; transform: translateY(-1px); }
         
-        .footer { background-color: #f8f9fa; border-top: 1px solid #e1e4e8; padding: 15px 30px; font-size: 12px; color: #6c757d; text-align: center; }
+        .footer { background-color: #f8f9fa; border-top: 1px solid #e1e4e8; padding: 16px 30px; font-size: 13px; color: #6c757d; text-align: center; }
     </style>
 </head>
 <body>
@@ -388,9 +452,21 @@
 <div class="email-container">
     <!-- Header -->
     <div class="header">
-        <h1>【系統通知】海外倉久置庫存與處置提醒 (去敏公開示範版)</h1>
-        <div class="header-meta">
-            發信日期：2026年8月5日 16:46 | 國際事務處通知
+        <div class="header-title-box">
+            <h1>海外倉久置庫存與處理管理表（資料去敏版）</h1>
+            <div class="header-meta">
+                發信日期：2026年8月5日 16:46 | 國際事務處通知
+            </div>
+        </div>
+        
+        <!-- ⭐️ 表頭右側：點選文字按鈕方式呈現國外倉類別 -->
+        <div class="header-warehouse-type">
+            <div class="header-warehouse-label">🌐 國外倉類別</div>
+            <div class="warehouse-btn-group">
+                <button class="wh-type-btn active" onclick="selectWarehouseType(this)">美國倉</button>
+                <button class="wh-type-btn" onclick="selectWarehouseType(this)">歐洲倉</button>
+                <button class="wh-type-btn" onclick="selectWarehouseType(this)">日本倉</button>
+            </div>
         </div>
     </div>
 
@@ -399,7 +475,7 @@
         
         <!-- Urgent Notice Box -->
         <div class="alert-box-danger">
-            <strong>⚠️ 重要配合與系統管制事項提醒：</strong>
+            <strong>⚠️ 重要提醒：</strong>
             <ol style="margin: 8px 0 0 0; padding-left: 20px;">
                 <li><strong>回覆期限：</strong>請相關業務單位協助於 <strong><u>指定期限前</u></strong> 說明久置庫存預計提貨時程。</li>
                 <li><strong>出口凍結規定：若久置總量 ≧ 3,500 MT 或最大庫齡 ≧ 151 天，系統將自動啟動出口凍結機制。</strong></li>
@@ -443,10 +519,10 @@
 
             <!-- Dynamic Overdue Ratio Analysis Sub-Table -->
             <div style="margin-top: 10px;">
-                <h4 style="margin: 0 0 10px 0; color:#1f4e78; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                <h4 style="margin: 0 0 10px 0; color:#1f4e78; font-size: 15px; display: flex; align-items: center; gap: 6px;">
                     📈 久置庫齡比例分析 (預設優先顯示庫齡 ≥ 151 天高風險案件)
                 </h4>
-                <p style="font-size: 12px; color: #64748b; margin-top: -4px; margin-bottom: 8px;">
+                <p style="font-size: 13px; color: #64748b; margin-top: -4px; margin-bottom: 8px;">
                     💡 <strong>提示：</strong>本表所有久置總量、比例、已填寫筆數及最新時間戳記均由原始明細資料自動動態運算產生。
                 </p>
                 <div class="table-responsive">
@@ -537,7 +613,7 @@
 
             <div class="table-top-header">
                 <div class="table-title">📋 久置庫存明細</div>
-                <div style="font-size: 12px; color: #64748b;">
+                <div style="font-size: 13px; color: #64748b;">
                     💡 提示：資料預設已依「久置庫齡區間」由大至小排序，點擊標題可進一步調整排序
                 </div>
             </div>
@@ -578,9 +654,9 @@
             <span class="btn-collapse" id="sec-4-btn">➖ 收合區塊</span>
         </div>
         <div id="sec-4-body" class="collapsible-body">
-            <p style="font-size: 13px; color: #555;">如需進一步查閱備份歷史資料，請點擊下方示範按鈕：</p>
+            <p style="font-size: 14px; color: #555;">如需進一步查閱備份歷史資料，請點擊下方示範按鈕：</p>
             <div style="text-align: center; margin: 20px 0;">
-                <button style="padding: 8px 16px; background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer;">📄 示範數據檔 (去敏化版).xlsx</button>
+                <button style="padding: 10px 20px; background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-size: 14px;">📄 示範數據檔 (去敏化版).xlsx</button>
             </div>
         </div>
 
@@ -602,13 +678,13 @@
             <input type="hidden" id="modalTargetRowId" value="">
             <div class="modal-info-bar" id="modalTargetInfo"></div>
 
-            <div style="font-size: 13px; font-weight: bold; color: #1f4e78; margin-bottom: 8px;">📑 歷史說明紀錄與比對：</div>
+            <div style="font-size: 14px; font-weight: bold; color: #1f4e78; margin-bottom: 8px;">📑 歷史說明紀錄與比對：</div>
             <div class="history-list" id="historyListContainer"></div>
 
             <div style="border-top: 1px dashed #cbd5e1; padding-top: 12px; margin-top: 10px;">
                 <button class="btn-add-row" onclick="showNewNoteInput()">➕ 新增說明列</button>
                 <div id="newNoteInputBox" style="display: none; margin-top: 8px;">
-                    <label style="font-size: 12px; font-weight: bold; color: #1f4e78; display: block; margin-bottom: 4px;">
+                    <label style="font-size: 13px; font-weight: bold; color: #1f4e78; display: block; margin-bottom: 4px;">
                         新增最新處置進度：
                     </label>
                     <textarea class="modal-textarea" id="newNoteTextarea" placeholder="例如：與客戶確認預計安排近期清關提貨..."></textarea>
@@ -682,6 +758,27 @@
             }
         });
         return worstAge;
+    }
+
+    // ⭐️ 國外倉類別點選切換邏輯
+    function selectWarehouseType(btnElem) {
+        document.querySelectorAll('.wh-type-btn').forEach(btn => btn.classList.remove('active'));
+        btnElem.classList.add('active');
+    }
+
+    function setupTableClickHighlight() {
+        document.querySelectorAll('table tbody').forEach(tbody => {
+            tbody.addEventListener('click', function(e) {
+                const tr = e.target.closest('tr');
+                if (!tr || tr.classList.contains('total-row')) return;
+                
+                const isSelected = tr.classList.contains('selected-row');
+                tbody.querySelectorAll('tr').forEach(r => r.classList.remove('selected-row'));
+                if (!isSelected) {
+                    tr.classList.add('selected-row');
+                }
+            });
+        });
     }
 
     function renderDynamicBaselineSummary() {
@@ -775,26 +872,28 @@
         tbody.appendChild(trTotal);
 
         const chartContainer = document.getElementById("dynamic-charts-container");
-        let chartHtml = `<div><h4 style="margin: 0 0 12px 0; color:#1f4e78; font-size: 14px;">📊 廠區分佈 (總計：${grandTotalQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} MT)</h4>`;
+        let chartHtml = `<div><h4 style="margin: 0 0 12px 0; color:#1f4e78; font-size: 15px;">📊 廠區分佈 (總計：${grandTotalQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} MT)</h4>`;
 
         Object.keys(plantTotals).forEach(pKey => {
             const pQty = plantTotals[pKey];
             const pRatio = grandTotalQty > 0 ? ((pQty / grandTotalQty) * 100).toFixed(2) : "0.00";
+            const barClass = pKey.includes("廠區 B") ? "bar-fill-plant-b" : "bar-fill-plant-a";
+
             chartHtml += `
                 <div class="bar-container">
                     <div class="bar-label"><span>${pKey} - ${pQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} MT</span><span>${pRatio}%</span></div>
-                    <div class="bar-wrapper"><div class="bar-fill-dynamic" style="width: ${pRatio}%;"></div></div>
+                    <div class="bar-wrapper"><div class="${barClass}" style="width: ${pRatio}%;"></div></div>
                 </div>
             `;
         });
 
-        chartHtml += `</div><div><h4 style="margin: 10px 0 8px 0; color:#1f4e78; font-size: 14px;">📍 區域久置加總分佈</h4><div class="region-cards-grid">`;
+        chartHtml += `</div><div><h4 style="margin: 12px 0 8px 0; color:#1f4e78; font-size: 15px;">📍 區域久置加總分佈</h4><div class="region-cards-grid">`;
         Object.keys(regionTotals).forEach(rKey => {
             const rQty = regionTotals[rKey];
             chartHtml += `
                 <div class="region-card">
-                    <div style="font-size: 11.5px; color: #666;">${rKey}區域久置總量</div>
-                    <div style="font-size: 18px; font-weight: bold; color: #1f4e78; margin-top: 2px;">${rQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} MT</div>
+                    <div style="font-size: 12px; color: #666;">${rKey}區域久置總量</div>
+                    <div style="font-size: 19px; font-weight: bold; color: #1f4e78; margin-top: 2px;">${rQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} MT</div>
                 </div>
             `;
         });
@@ -875,8 +974,8 @@
                         <td class="text-right">
                             <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px;">
                                 <div style="text-align:right;">
-                                    <div>${statusHtml} <span style="font-size:11.5px; color:#475569;">(${filledCount}/${totalCount} 筆)</span></div>
-                                    <div style="font-size:10.5px; color:#64748b;">${timeDisplay}</div>
+                                    <div>${statusHtml} <span style="font-size:12px; color:#475569;">(${filledCount}/${totalCount} 筆)</span></div>
+                                    <div style="font-size:11px; color:#64748b;">${timeDisplay}</div>
                                 </div>
                                 <div style="display:inline-flex; align-items:center;">
                                     <div class="mini-bar-wrapper"><div class="mini-bar-fill" style="width: ${parseFloat(ratioVal)}%;"></div></div>
@@ -893,8 +992,8 @@
                         <td class="text-right">
                             <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px;">
                                 <div style="text-align:right;">
-                                    <div>${statusHtml} <span style="font-size:11.5px; color:#475569;">(${filledCount}/${totalCount} 筆)</span></div>
-                                    <div style="font-size:10.5px; color:#64748b;">${timeDisplay}</div>
+                                    <div>${statusHtml} <span style="font-size:12px; color:#475569;">(${filledCount}/${totalCount} 筆)</span></div>
+                                    <div style="font-size:11px; color:#64748b;">${timeDisplay}</div>
                                 </div>
                                 <div style="display:inline-flex; align-items:center;">
                                     <div class="mini-bar-wrapper"><div class="mini-bar-fill" style="width: ${parseFloat(ratioVal)}%;"></div></div>
@@ -987,7 +1086,7 @@
         const container = document.getElementById("historyListContainer");
         container.innerHTML = "";
         if (!historyArr || historyArr.length === 0) {
-            container.innerHTML = `<div style="color:#94a3b8; font-size:12.5px; padding:10px 0;">尚無歷史處置說明，請點擊「＋ 新增說明列」開始填寫。</div>`;
+            container.innerHTML = `<div style="color:#94a3b8; font-size:13px; padding:10px 0;">尚無歷史處置說明，請點擊「＋ 新增說明列」開始填寫。</div>`;
             return;
         }
         historyArr.forEach((h, idx) => {
@@ -1098,7 +1197,7 @@
             const historyCount = row.history ? row.history.length : 0;
             const hasNoteClass = historyCount > 0 ? "has-note" : "";
             const btnText = historyCount > 0 ? `📝 已有 ${historyCount} 筆說明` : "✏️ 填寫說明";
-            const lastTime = historyCount > 0 ? `<div style="font-size:10.5px; color:#64748b; margin-top:2px;">⏱️ 最新: ${row.history[historyCount - 1].time}</div>` : "";
+            const lastTime = historyCount > 0 ? `<div style="font-size:11px; color:#64748b; margin-top:2px;">⏱️ 最新: ${row.history[historyCount - 1].time}</div>` : "";
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
@@ -1182,6 +1281,7 @@
         renderDynamicBaselineSummary();
         renderDynamicRatioAnalysisTable();
         applyFilters();
+        setupTableClickHighlight();
     }
 
     window.onload = initDynamicDashboard;
