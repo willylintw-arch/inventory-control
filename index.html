@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>(更新至8/5) 通知久置貨物與處置提醒 [去敏展示版]</title>
+    <style>
+        body {
+            font-family: 'PingFang TC', 'Microsoft JhengHei', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            color: #333333;
+            line-height: 1.6;
+        }
+        .email-container {
+            width: 96vw;
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e1e4e8;
+        }
+        .header {
+            background: linear-gradient(135deg, #1f4e78 0%, #2f5597 100%);
+            color: #ffffff;
+            padding: 24px 35px;
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .header-meta {
+            font-size: 13px;
+            color: #d0e1f9;
+        }
+        .content {
+            padding: 30px 35px;
+        }
+        .alert-box-danger {
+            background-color: #f8d7da;
+            border-left: 5px solid #dc3545;
+            color: #842029;
+            padding: 16px 20px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #1f4e78;
+            padding-bottom: 8px;
+            margin-top: 25px;
+            margin-bottom: 18px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .section-title {
+            font-size: 17px;
+            font-weight: bold;
+            color: #1f4e78;
+            margin: 0;
+        }
+        .btn-collapse {
+            font-size: 13px;
+            color: #2f5597;
+            background-color: #e8eef5;
+            border: 1px solid #cbd5e1;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .section-header:hover .btn-collapse {
+            background-color: #1f4e78;
+            color: #ffffff;
+        }
+        .collapsible-body {
+            transition: max-height 0.3s ease-out;
+        }
+
+        .merged-grid {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+            margin-bottom: 20px;
+        }
+        .merged-col-left {
+            flex: 1.1;
+            background-color: #ffffff;
+        }
+        .merged-col-right {
+            flex: 0.9;
+            background-color: #fafbfc;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            table-layout: auto;
+        }
+        th {
+            background-color: #2f5597;
+            color: #ffffff;
+            padding: 10px 10px;
+            text-align: center;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+        th:hover { background-color: #1f4e78; }
+        th .sort-icon {
+            font-size: 11px;
+            margin-left: 3px;
+            opacity: 0.8;
+        }
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e9ecef;
+            text-align: center;
+            white-space: nowrap;
+        }
+        tr:nth-child(even) td { background-color: #f8f9fa; }
+        .text-right { text-align: right; }
+        .text-bold { font-weight: bold; }
+        .total-row td {
+            background-color: #e8eef5 !important;
+            font-weight: bold;
+            color: #1f4e78;
+        }
+        
+        .table-top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .table-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #1f4e78;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-sales {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11.5px;
+            font-weight: bold;
+            background-color: #e2e8f0;
+            color: #1e293b;
+            border: 1px solid #cbd5e1;
+        }
+
+        .ratio-link-btn {
+            display: inline-flex;
+            align-items: center;
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ratio-link-btn:hover {
+            background-color: #1d4ed8;
+            color: #ffffff;
+            transform: scale(1.04);
+            box-shadow: 0 2px 5px rgba(29, 78, 216, 0.3);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        .status-none { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .status-partial { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .status-full { background-color: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+
+        .bar-container { margin-bottom: 14px; }
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12.5px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .bar-wrapper {
+            background-color: #e9ecef;
+            height: 18px;
+            border-radius: 9px;
+            overflow: hidden;
+        }
+        .bar-fill-dynamic { background-color: #2f5597; height: 100%; border-radius: 9px; transition: width 0.4s ease; }
+
+        .mini-bar-wrapper {
+            background-color: #e2e8f0;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            display: inline-block;
+            width: 65px;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+        .mini-bar-fill {
+            background-color: #2f5597;
+            height: 100%;
+            border-radius: 6px;
+        }
+
+        .region-cards-grid {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .region-card {
+            flex: 1;
+            background: #ffffff;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            text-align: center;
+        }
+
+        .btn-open-popup {
+            background-color: #28a745;
+            color: #ffffff;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 11.5px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+        .btn-open-popup:hover { background-color: #218838; transform: translateY(-1px); }
+        .btn-open-popup.has-note { background-color: #0d6efd; }
+        .btn-open-popup.has-note:hover { background-color: #0b5ed7; }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .modal-box {
+            background-color: #ffffff;
+            width: 92%; max-width: 680px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            overflow: hidden;
+            animation: modalFadeIn 0.2s ease-out;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+            background-color: #1f4e78; color: #ffffff;
+            padding: 16px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header h3 { margin: 0; font-size: 16px; }
+        .modal-close-btn { background: none; border: none; color: #ffffff; font-size: 22px; cursor: pointer; font-weight: bold; }
+        .modal-body { padding: 20px; max-height: 70vh; overflow-y: auto; }
+        .modal-info-bar {
+            background-color: #f0f4f8; padding: 10px 14px; border-radius: 6px;
+            font-size: 12.5px; color: #1f4e78; margin-bottom: 15px; line-height: 1.6; border: 1px solid #cbd5e1;
+        }
+
+        .history-list { margin-bottom: 15px; }
+        .history-item {
+            background-color: #fafbfc; border: 1px solid #e1e4e8; border-left: 4px solid #1f4e78;
+            border-radius: 4px; padding: 10px 14px; margin-bottom: 10px;
+        }
+        .history-time { font-size: 11.5px; font-weight: bold; color: #64748b; margin-bottom: 4px; }
+        .history-text { font-size: 13px; color: #333333; white-space: pre-wrap; word-break: break-word; }
+        .btn-add-row {
+            background-color: #2f5597; color: #ffffff; border: none; padding: 6px 14px;
+            border-radius: 4px; cursor: pointer; font-size: 12.5px; font-weight: bold; margin-bottom: 12px;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .btn-add-row:hover { background-color: #1f4e78; }
+        .modal-textarea {
+            width: 100%; height: 80px; padding: 10px; border: 1px solid #cbd5e1;
+            border-radius: 4px; font-family: inherit; font-size: 13px; box-sizing: border-box; outline: none; resize: vertical;
+        }
+        .modal-textarea:focus { border-color: #2f5597; box-shadow: 0 0 0 2px rgba(47, 85, 151, 0.15); }
+        .modal-footer {
+            padding: 12px 20px 18px 20px; display: flex; justify-content: flex-end; gap: 10px;
+            background-color: #f8f9fa; border-top: 1px solid #e1e4e8;
+        }
+        .btn-modal-save { background-color: #28a745; color: #ffffff; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .btn-modal-cancel { background-color: #64748b; color: #ffffff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+
+        .badge-age {
+            display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11.5px; font-weight: 600; white-space: nowrap;
+        }
+        .age-60-120 { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+        .age-121-150 { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .age-151-210 { background-color: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+        .age-210-plus { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; font-weight: 700; }
+
+        .filter-panel {
+            background-color: #f0f4f8; border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px 24px; margin-bottom: 20px;
+        }
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 18px; }
+        .filter-group { display: flex; flex-direction: column; }
+        .filter-group label { font-size: 12.5px; font-weight: bold; color: #1f4e78; margin-bottom: 6px; }
+        .filter-group select {
+            padding: 8px 10px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 13.5px; background-color: #ffffff; color: #333333; outline: none;
+        }
+        .filter-group select:focus { border-color: #2f5597; box-shadow: 0 0 0 2px rgba(47, 85, 151, 0.2); }
+        .kpi-cards { display: flex; gap: 18px; margin-bottom: 15px; }
+        .kpi-card { flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 14px; text-align: center; }
+        .kpi-title { font-size: 12.5px; color: #64748b; }
+        .kpi-value { font-size: 21px; font-weight: bold; color: #1f4e78; margin-top: 4px; }
+        .btn-reset {
+            background-color: #64748b; color: #ffffff; border: none; padding: 8px 18px; border-radius: 4px; cursor: pointer; font-size: 12.5px; font-weight: bold; transition: background 0.2s;
+        }
+        .btn-reset:hover { background-color: #475569; }
+
+        .more-btn-wrapper { text-align: center; margin-top: 15px; margin-bottom: 20px; }
+        .btn-more {
+            background-color: #1f4e78; color: #ffffff; border: none; padding: 10px 28px; border-radius: 20px; cursor: pointer; font-size: 13.5px; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: all 0.2s ease;
+        }
+        .btn-more:hover { background-color: #163754; transform: translateY(-1px); }
+        
+        .footer { background-color: #f8f9fa; border-top: 1px solid #e1e4e8; padding: 15px 30px; font-size: 12px; color: #6c757d; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="email-container">
+    <!-- Header -->
+    <div class="header">
+        <h1>【系統通知】海外倉久置庫存與處置提醒 (去敏公開示範版)</h1>
+        <div class="header-meta">
+            發信日期：2026年8月5日 16:46 | 國際業務處通知
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        
+        <!-- Urgent Notice Box -->
+        <div class="alert-box-danger">
+            <strong>⚠️ 重要配合與系統管制事項提醒：</strong>
+            <ol style="margin: 8px 0 0 0; padding-left: 20px;">
+                <li><strong>回覆期限：</strong>請相關業務單位協助於 <strong><u>指定期限前</u></strong> 說明久置庫存預計提貨時程。</li>
+                <li><strong>出口凍結規定：</strong>依放行規定，貨物逾期未完成提貨登記作業者，系統將自動啟動預警機制。</li>
+            </ol>
+        </div>
+
+        <!-- Section 1: Baseline Summary Table & Visual Chart Row -->
+        <div class="section-header" onclick="toggleSection('sec-merged-body', 'sec-merged-btn')">
+            <div class="section-title">📌 一、久置庫存總覽與區域分佈分析 (動態計算，單位：公噸 MT)</div>
+            <span class="btn-collapse" id="sec-merged-btn">➖ 收合區塊</span>
+        </div>
+        <div id="sec-merged-body" class="collapsible-body">
+            <div class="merged-grid">
+                
+                <!-- Left Column: Dynamic Summary Table -->
+                <div class="merged-col-left">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>來源廠區</th>
+                                    <th>地區</th>
+                                    <th>久置庫存量 (MT)</th>
+                                    <th>佔比 (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dynamic-summary-tbody">
+                                <!-- Generated Dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Right Column: Visual Charts & Regional Aggregation -->
+                <div class="merged-col-right" id="dynamic-charts-container">
+                    <!-- Generated Dynamically -->
+                </div>
+
+            </div>
+
+            <!-- Dynamic Overdue Ratio Analysis Sub-Table -->
+            <div style="margin-top: 10px;">
+                <h4 style="margin: 0 0 10px 0; color:#1f4e78; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                    📈 久置庫齡比例分析 (預設優先顯示庫齡 ≥ 151 天高風險案件)
+                </h4>
+                <p style="font-size: 12px; color: #64748b; margin-top: -4px; margin-bottom: 8px;">
+                    💡 <strong>提示：</strong>本表所有久置總量、比例、已填寫筆數及最新時間戳記均由原始明細資料自動動態運算產生。
+                </p>
+                <div class="table-responsive">
+                    <table id="ratio-analysis-table">
+                        <thead>
+                            <tr>
+                                <th>來源廠區</th>
+                                <th>久置庫齡區間</th>
+                                <th>倉庫名稱 (Warehouse)</th>
+                                <th>久置數量 (MT)</th>
+                                <th>久置庫齡比例 (%) [包含處置說明填寫進度與最新時間]</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ratio-analysis-tbody">
+                            <!-- Generated Dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="more-btn-wrapper">
+                    <button class="btn-more" id="btn-toggle-ratio-more" onclick="toggleRatioShowAll()">
+                        👇 查看更多資料 (展開其餘明細)
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Section 2: Updated Inventory Management Dashboard (庫存管理儀表板) -->
+        <div class="section-header" id="sec-dashboard-anchor" onclick="toggleSection('sec-3-body', 'sec-3-btn')">
+            <div class="section-title">🔍 二、庫存管理儀表板 (動態多條件篩選與排序)</div>
+            <span class="btn-collapse" id="sec-3-btn">➖ 收合區塊</span>
+        </div>
+        <div id="sec-3-body" class="collapsible-body">
+            
+            <!-- Control Panel -->
+            <div class="filter-panel">
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <label for="filter-plant">🏭 廠區 (Plant)</label>
+                        <select id="filter-plant" onchange="applyFilters()"><option value="ALL">全部廠區 (All)</option></select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-region">📍 地區 (Region)</label>
+                        <select id="filter-region" onchange="applyFilters()"><option value="ALL">全部地區 (All)</option></select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-location">🏢 LOCATION (倉庫)</label>
+                        <select id="filter-location" onchange="applyFilters()"><option value="ALL">全部倉庫 (All)</option></select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-item">📦 料號 (Item No.)</label>
+                        <select id="filter-item" onchange="applyFilters()"><option value="ALL">全部料號 (All)</option></select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-batch">🏷️ 批號 (Batch No.)</label>
+                        <select id="filter-batch" onchange="applyFilters()"><option value="ALL">全部批號 (All)</option></select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-age">⏳ 久置庫齡區間</label>
+                        <select id="filter-age" onchange="applyFilters()"><option value="ALL">全部庫齡區間 (All)</option></select>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="kpi-cards">
+                    <div class="kpi-card">
+                        <div class="kpi-title">篩選後久置總量 (MT)</div>
+                        <div class="kpi-value" id="kpi-qty">0.00 MT</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">篩選後久置金額 (USD)</div>
+                        <div class="kpi-value" id="kpi-amount">$0.00</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">符合條件筆數</div>
+                        <div class="kpi-value" id="kpi-count" style="color: #28a745;">0 筆</div>
+                    </div>
+                </div>
+
+                <div style="text-align: right;">
+                    <button class="btn-reset" onclick="resetFilters()">🔄 重置所有篩選條件</button>
+                </div>
+            </div>
+
+            <!-- Table Top Title Label -->
+            <div class="table-top-header">
+                <div class="table-title">📋 久置庫存明細</div>
+                <div style="font-size: 12px; color: #64748b;">
+                    💡 提示：資料預設已依「久置庫齡區間」由大至小排序，點擊標題可進一步調整排序
+                </div>
+            </div>
+
+            <!-- Detail Table -->
+            <div class="table-responsive">
+                <table id="analysis-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('plant')">廠區 <span class="sort-icon" id="sort-plant">⇅</span></th>
+                            <th onclick="sortTable('sales')">業務 <span class="sort-icon" id="sort-sales">⇅</span></th>
+                            <th onclick="sortTable('region')">地區 <span class="sort-icon" id="sort-region">⇅</span></th>
+                            <th onclick="sortTable('location')">LOCATION <span class="sort-icon" id="sort-location">⇅</span></th>
+                            <th onclick="sortTable('wh')">倉庫名稱 <span class="sort-icon" id="sort-wh">⇅</span></th>
+                            <th onclick="sortTable('item')">料號 <span class="sort-icon" id="sort-item">⇅</span></th>
+                            <th onclick="sortTable('batch')">批號 <span class="sort-icon" id="sort-batch">⇅</span></th>
+                            <th onclick="sortTable('age')">久置庫齡區間 <span class="sort-icon" id="sort-age">▼</span></th>
+                            <th onclick="sortTable('qty')">久置數量 (MT) <span class="sort-icon" id="sort-qty">⇅</span></th>
+                            <th onclick="sortTable('amount')">久置金額 (USD) <span class="sort-icon" id="sort-amount">⇅</span></th>
+                            <th>📝 業務處置說明歷程</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Generated Dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="more-btn-wrapper" id="more-btn-container" style="display: none;">
+                <button class="btn-more" id="btn-toggle-more" onclick="toggleShowAll()">
+                    👇 看更多明細
+                </button>
+            </div>
+        </div>
+
+        <!-- Section 3: File Download -->
+        <div class="section-header" onclick="toggleSection('sec-4-body', 'sec-4-btn')">
+            <div class="section-title">📥 三、備份明細檔案下載</div>
+            <span class="btn-collapse" id="sec-4-btn">➖ 收合區塊</span>
+        </div>
+        <div id="sec-4-body" class="collapsible-body">
+            <p style="font-size: 13px; color: #555;">如需進一步查閱備份歷史資料，請點擊下方示範按鈕：</p>
+            <div style="text-align: center; margin: 20px 0;">
+                <button style="padding: 8px 16px; background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer;">📄 示範數據檔 (去敏化版).xlsx</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        此網頁為 GitHub Pages 互動展示頁面，已完成全資料去敏化處理。
+    </div>
+</div>
+
+<!-- Modal Overlay -->
+<div class="modal-overlay" id="noteModalOverlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>📝 業務處置說明歷程紀錄與追蹤</h3>
+            <button class="modal-close-btn" onclick="closeNoteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="modalTargetRowId" value="">
+            <div class="modal-info-bar" id="modalTargetInfo"></div>
+
+            <div style="font-size: 13px; font-weight: bold; color: #1f4e78; margin-bottom: 8px;">📑 歷史說明紀錄與比對：</div>
+            <div class="history-list" id="historyListContainer"></div>
+
+            <div style="border-top: 1px dashed #cbd5e1; padding-top: 12px; margin-top: 10px;">
+                <button class="btn-add-row" onclick="showNewNoteInput()">➕ 新增說明列</button>
+                <div id="newNoteInputBox" style="display: none; margin-top: 8px;">
+                    <label style="font-size: 12px; font-weight: bold; color: #1f4e78; display: block; margin-bottom: 4px;">
+                        新增最新處置進度：
+                    </label>
+                    <textarea class="modal-textarea" id="newNoteTextarea" placeholder="例如：與客戶確認預計安排近期清關提貨..."></textarea>
+                    <div style="text-align: right; margin-top: 8px;">
+                        <button class="btn-modal-save" onclick="saveNewHistoryRow()">💾 儲存此筆說明</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal-cancel" onclick="closeNoteModal()">關閉視窗</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. 去敏資料集
+    let overdueData = [
+        { id: 1, plant: "廠區 A", region: "美東", sales: "業務專員 A", location: "地點 A", wh: "美東倉庫 A1", item: "ITEM-101", batch: "BATCH-2026-01", age: "60-120天", qty: 10.00, amount: 15000.00, history: [] },
+        { id: 2, plant: "廠區 A", region: "美東", sales: "業務專員 A", location: "地點 A", wh: "美東倉庫 A2", item: "ITEM-102", batch: "BATCH-2026-02", age: "210天以上", qty: 300.00, amount: 310000.00, history: [] },
+        { id: 3, plant: "廠區 A", region: "美東", sales: "業務專員 A", location: "地點 A", wh: "美東倉庫 A2", item: "ITEM-101", batch: "BATCH-2026-03", age: "60-120天", qty: 500.00, amount: 900000.00, history: [] },
+        { id: 4, plant: "廠區 A", region: "美東", sales: "業務專員 A", location: "地點 B", wh: "美東倉庫 B1", item: "ITEM-103", batch: "BATCH-2026-04", age: "210天以上", qty: 130.00, amount: 180000.00, history: [] },
+        { id: 5, plant: "廠區 A", region: "美東", sales: "業務專員 A", location: "地點 C", wh: "美東倉庫 C1", item: "ITEM-103", batch: "BATCH-2026-05", age: "210天以上", qty: 10.00, amount: 10000.00, history: [] },
+        { id: 6, plant: "廠區 A", region: "美西", sales: "業務專員 B", location: "地點 D", wh: "美西倉庫 D1", item: "ITEM-201", batch: "BATCH-2026-06", age: "210天以上", qty: 15.00, amount: 20000.00, history: [] },
+        { id: 7, plant: "廠區 A", region: "美西", sales: "業務專員 B", location: "地點 D", wh: "美西倉庫 D2", item: "ITEM-201", batch: "BATCH-2026-07", age: "60-120天", qty: 200.00, amount: 300000.00, history: [] },
+        { id: 8, plant: "廠區 A", region: "美西", sales: "業務專員 B", location: "地點 D", wh: "美西倉庫 D3", item: "ITEM-102", batch: "BATCH-2026-08", age: "60-120天", qty: 25.00, amount: 40000.00, history: [] },
+        { id: 9, plant: "廠區 A", region: "美西", sales: "業務專員 B", location: "地點 D", wh: "美西倉庫 D3", item: "ITEM-202", batch: "BATCH-2026-09", age: "60-120天", qty: 5.00, amount: 5000.00, history: [] },
+        { id: 10, plant: "廠區 A", region: "美西", sales: "業務專員 B", location: "地點 D", wh: "美西倉庫 D3", item: "ITEM-201", batch: "BATCH-2026-10", age: "210天以上", qty: 10.00, amount: 12000.00, history: [] },
+        { id: 11, plant: "廠區 A", region: "美西", sales: "業務專員 B", location: "地點 E", wh: "美西倉庫 E1", item: "ITEM-203", batch: "BATCH-2026-11", age: "60-120天", qty: 20.00, amount: 30000.00, history: [] },
+        { id: 12, plant: "廠區 A", region: "美西", sales: "業務專員 B", location: "地點 F", wh: "美西倉庫 F1", item: "ITEM-203", batch: "BATCH-2026-12", age: "60-120天", qty: 20.00, amount: 28000.00, history: [] },
+        { id: 13, plant: "廠區 A", region: "美西", sales: "業務專員 B", location: "地點 F", wh: "美西倉庫 F1", item: "ITEM-203", batch: "BATCH-2026-13", age: "60-120天", qty: 200.00, amount: 260000.00, history: [] },
+        { id: 14, plant: "廠區 A", region: "美西", sales: "業務專員 B", location: "地點 F", wh: "美西倉庫 F1", item: "ITEM-204", batch: "BATCH-2026-14", age: "60-120天", qty: 10.00, amount: 16000.00, history: [] },
+        { id: 15, plant: "廠區 A", region: "美西", sales: "業務專員 B", location: "地點 F", wh: "美西倉庫 F2", item: "ITEM-202", batch: "BATCH-2026-15", age: "60-120天", qty: 45.00, amount: 75000.00, history: [] },
+        { id: 16, plant: "廠區 B", region: "美東", sales: "業務專員 A", location: "地點 A", wh: "美東倉庫 A2", item: "ITEM-301", batch: "BATCH-2026-16", age: "151-210天", qty: 140.00, amount: 230000.00, history: [] },
+        { id: 17, plant: "廠區 B", region: "美東", sales: "業務專員 A", location: "地點 C", wh: "美東倉庫 C1", item: "ITEM-302", batch: "BATCH-2026-17", age: "60-120天", qty: 550.00, amount: 860000.00, history: [] },
+        { id: 18, plant: "廠區 B", region: "美西", sales: "業務專員 B", location: "地點 D", wh: "美西倉庫 D1", item: "ITEM-302", batch: "BATCH-2026-18", age: "60-120天", qty: 5.00, amount: 7000.00, history: [] },
+        { id: 19, plant: "廠區 B", region: "美西", sales: "業務專員 B", location: "地點 D", wh: "美西倉庫 D1", item: "ITEM-302", batch: "BATCH-2026-19", age: "60-120天", qty: 3.00, amount: 4000.00, history: [] },
+        { id: 20, plant: "廠區 B", region: "美西", sales: "業務專員 B", location: "地點 D", wh: "美西倉庫 D1", item: "ITEM-302", batch: "BATCH-2026-20", age: "60-120天", qty: 10.00, amount: 17000.00, history: [] },
+        { id: 21, plant: "廠區 B", region: "美西", sales: "業務專員 B", location: "地點 D", wh: "美西倉庫 D1", item: "ITEM-201", batch: "BATCH-2026-21", age: "60-120天", qty: 80.00, amount: 120000.00, history: [] },
+        { id: 22, plant: "廠區 B", region: "美西", sales: "業務專員 B", location: "地點 D", wh: "美西倉庫 D2", item: "ITEM-302", batch: "BATCH-2026-22", age: "60-120天", qty: 5.00, amount: 7000.00, history: [] },
+        { id: 23, plant: "廠區 B", region: "美西", sales: "業務專員 B", location: "地點 D", wh: "美西倉庫 D2", item: "ITEM-302", batch: "BATCH-2026-23", age: "60-120天", qty: 10.00, amount: 14000.00, history: [] },
+        { id: 24, plant: "廠區 B", region: "美西", sales: "業務專員 B", location: "地點 D", wh: "美西倉庫 D3", item: "ITEM-302", batch: "BATCH-2026-24", age: "60-120天", qty: 55.00, amount: 85000.00, history: [] },
+        { id: 25, plant: "廠區 B", region: "美西", sales: "業務專員 B", location: "地點 D", wh: "美西倉庫 D3", item: "ITEM-302", batch: "BATCH-2026-25", age: "60-120天", qty: 20.00, amount: 30000.00, history: [] }
+    ];
+
+    let currentFilteredData = [];
+    let isShowAll = false;
+    let isRatioShowAll = false;
+    let currentSortColumn = 'age';
+    let currentSortAsc = false;
+
+    const ageRank = { "210天以上": 1, "151-210天": 2, "121-150天": 3, "60-120天": 4 };
+    function isOver151Days(ageStr) { return ageStr === "210天以上" || ageStr === "151-210天"; }
+    function getAgeBadgeClass(ageStr) {
+        if (ageStr === "60-120天") return "age-60-120";
+        if (ageStr === "121-150天") return "age-121-150";
+        if (ageStr === "151-210天") return "age-151-210";
+        if (ageStr === "210天以上") return "age-210-plus";
+        return "age-60-120";
+    }
+
+    // 2. 動態繪製與修正排版
+    function renderDynamicBaselineSummary() {
+        const grandTotalQty = overdueData.reduce((sum, d) => sum + d.qty, 0);
+        let plantRegionMap = {};
+        let regionTotals = { "美東": 0, "美西": 0 };
+
+        overdueData.forEach(d => {
+            if (!plantRegionMap[d.plant]) plantRegionMap[d.plant] = {};
+            if (!plantRegionMap[d.plant][d.region]) plantRegionMap[d.plant][d.region] = 0;
+            plantRegionMap[d.plant][d.region] += d.qty;
+            if (regionTotals[d.region] !== undefined) regionTotals[d.region] += d.qty;
+            else regionTotals[d.region] = d.qty;
+        });
+
+        const tbody = document.getElementById("dynamic-summary-tbody");
+        tbody.innerHTML = "";
+        let plantTotals = {};
+
+        Object.keys(plantRegionMap).forEach(plantKey => {
+            const regions = plantRegionMap[plantKey];
+            const regionKeys = Object.keys(regions);
+            let plantSubtotal = 0;
+
+            regionKeys.forEach((rKey, idx) => {
+                const qty = regions[rKey];
+                plantSubtotal += qty;
+                const ratio = grandTotalQty > 0 ? ((qty / grandTotalQty) * 100).toFixed(2) : "0.00";
+
+                const tr = document.createElement("tr");
+                let plantTd = idx === 0 ? `<td rowspan="${regionKeys.length}" class="text-bold" style="vertical-align: middle;">${plantKey}</td>` : "";
+                tr.innerHTML = `${plantTd}<td>${rKey}</td><td class="text-right">${qty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td><td>${ratio}%</td>`;
+                tbody.appendChild(tr);
+            });
+
+            plantTotals[plantKey] = plantSubtotal;
+            const subRatio = grandTotalQty > 0 ? ((plantSubtotal / grandTotalQty) * 100).toFixed(2) : "0.00";
+            const trSub = document.createElement("tr");
+            trSub.className = "total-row";
+            trSub.innerHTML = `<td>${plantKey} 小計</td><td>-</td><td class="text-right">${plantSubtotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td><td>${subRatio}%</td>`;
+            tbody.appendChild(trSub);
+        });
+
+        const trTotal = document.createElement("tr");
+        trTotal.className = "total-row";
+        trTotal.style = "background-color: #1f4e78 !important; color: #ffffff;";
+        trTotal.innerHTML = `<td>久置總計 (TTL)</td><td>跨區加總</td><td class="text-right">${grandTotalQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td><td>100.00%</td>`;
+        tbody.appendChild(trTotal);
+
+        const chartContainer = document.getElementById("dynamic-charts-container");
+        let chartHtml = `<div><h4 style="margin: 0 0 12px 0; color:#1f4e78; font-size: 14px;">📊 來源廠區分佈 (總計：${grandTotalQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} MT)</h4>`;
+
+        Object.keys(plantTotals).forEach(pKey => {
+            const pQty = plantTotals[pKey];
+            const pRatio = grandTotalQty > 0 ? ((pQty / grandTotalQty) * 100).toFixed(2) : "0.00";
+            chartHtml += `
+                <div class="bar-container">
+                    <div class="bar-label"><span>${pKey} - ${pQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} MT</span><span>${pRatio}%</span></div>
+                    <div class="bar-wrapper"><div class="bar-fill-dynamic" style="width: ${pRatio}%;"></div></div>
+                </div>
+            `;
+        });
+
+        chartHtml += `</div><div><h4 style="margin: 10px 0 8px 0; color:#1f4e78; font-size: 14px;">📍 區域久置加總分佈</h4><div class="region-cards-grid">`;
+        Object.keys(regionTotals).forEach(rKey => {
+            const rQty = regionTotals[rKey];
+            chartHtml += `
+                <div class="region-card">
+                    <div style="font-size: 11.5px; color: #666;">${rKey}區域久置總量</div>
+                    <div style="font-size: 18px; font-weight: bold; color: #1f4e78; margin-top: 2px;">${rQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} MT</div>
+                </div>
+            `;
+        });
+        chartHtml += `</div></div>`;
+        chartContainer.innerHTML = chartHtml;
+    }
+
+    // ⭐️【重點修復】重新構造子表格動態跨行 (Rowspan) 邏輯，避免欄位跑位
+    function renderDynamicRatioAnalysisTable() {
+        const grandTotalQty = overdueData.reduce((sum, d) => sum + d.qty, 0);
+        let groupsMap = {};
+
+        overdueData.forEach(d => {
+            const key = `${d.plant}___${d.age}___${d.wh}___${d.location}`;
+            if (!groupsMap[key]) {
+                groupsMap[key] = { plant: d.plant, age: d.age, wh: d.wh, location: d.location, totalQty: 0, items: [] };
+            }
+            groupsMap[key].totalQty += d.qty;
+            groupsMap[key].items.push(d);
+        });
+
+        let groupList = Object.values(groupsMap);
+        groupList.sort((a, b) => {
+            const rankA = ageRank[a.age] || 99;
+            const rankB = ageRank[b.age] || 99;
+            if (rankA !== rankB) return rankA - rankB;
+            return b.totalQty - a.totalQty;
+        });
+
+        // 依展收狀態決定呈現清單
+        const filteredGroupList = isRatioShowAll ? groupList : groupList.filter(g => isOver151Days(g.age));
+
+        const tbody = document.getElementById("ratio-analysis-tbody");
+        tbody.innerHTML = "";
+
+        // 精確統計「實際出現在畫面上」的廠區行數
+        let plantSpanMap = {};
+        filteredGroupList.forEach(g => {
+            plantSpanMap[g.plant] = (plantSpanMap[g.plant] || 0) + 1;
+        });
+
+        let renderedPlantTracker = {};
+
+        filteredGroupList.forEach(g => {
+            const totalCount = g.items.length;
+            let filledCount = 0;
+            let latestTimestamp = "";
+
+            g.items.forEach(r => {
+                if (r.history && r.history.length > 0) {
+                    filledCount++;
+                    const lastH = r.history[r.history.length - 1];
+                    if (!latestTimestamp || lastH.time > latestTimestamp) { latestTimestamp = lastH.time; }
+                }
+            });
+
+            let statusHtml = (filledCount === 0) 
+                ? `<span class="status-badge status-none">🔴 未填寫 (${filledCount}/${totalCount})</span>`
+                : (filledCount < totalCount)
+                ? `<span class="status-badge status-partial">🟡 部分填寫 (${filledCount}/${totalCount})</span>`
+                : `<span class="status-badge status-full">🟢 已完成 (${filledCount}/${totalCount})</span>`;
+
+            const ratioVal = grandTotalQty > 0 ? ((g.totalQty / grandTotalQty) * 100).toFixed(2) : "0.00";
+            const timeDisplay = latestTimestamp ? `⏱️ 最新: ${latestTimestamp}` : `⏱️ 尚無最新回覆`;
+            const badgeClass = getAgeBadgeClass(g.age);
+
+            const tr = document.createElement("tr");
+
+            // 嚴格對齊 5 個 <td> 結構
+            let plantTd = "";
+            if (!renderedPlantTracker[g.plant]) {
+                renderedPlantTracker[g.plant] = true;
+                const rowSpan = plantSpanMap[g.plant];
+                const bgStyle = (g.plant.includes("廠區 B")) ? "background-color: #f8f9fa;" : "";
+                plantTd = `<td rowspan="${rowSpan}" class="text-bold" style="vertical-align: middle; ${bgStyle}">${g.plant}</td>`;
+            }
+
+            tr.innerHTML = `
+                ${plantTd}
+                <td><span class="badge-age ${badgeClass}">${g.age}</span></td>
+                <td>${g.wh}</td>
+                <td class="text-right text-bold">${g.totalQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td class="text-right">
+                    <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px;">
+                        <div style="text-align:right;">
+                            <div>${statusHtml} <span style="font-size:11.5px; color:#475569;">(${filledCount}/${totalCount} 筆)</span></div>
+                            <div style="font-size:10.5px; color:#64748b;">${timeDisplay}</div>
+                        </div>
+                        <div style="display:inline-flex; align-items:center;">
+                            <div class="mini-bar-wrapper"><div class="mini-bar-fill" style="width: ${parseFloat(ratioVal)}%;"></div></div>
+                            <button class="ratio-link-btn" onclick="filterAndScrollToDashboard('${g.plant}', '${g.age}', '${g.location}')">👉 ${ratioVal}%</button>
+                        </div>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        const btnToggle = document.getElementById("btn-toggle-ratio-more");
+        if (btnToggle) {
+            const hiddenCount = groupList.length - filteredGroupList.length;
+            btnToggle.innerText = isRatioShowAll 
+                ? "👆 收合明細 (僅顯示庫齡 ≥ 151天之高風險項目)" 
+                : `👇 查看更多資料 (展開其餘 ${hiddenCount} 筆明細)`;
+        }
+    }
+
+    function populateFilterDropdowns() {
+        const fields = [
+            { id: "filter-plant", key: "plant" },
+            { id: "filter-region", key: "region" },
+            { id: "filter-location", key: "location" },
+            { id: "filter-item", key: "item" },
+            { id: "filter-batch", key: "batch" },
+            { id: "filter-age", key: "age" }
+        ];
+
+        fields.forEach(f => {
+            const selectElem = document.getElementById(f.id);
+            const currentVal = selectElem.value;
+            selectElem.innerHTML = `<option value="ALL">全部 (All)</option>`;
+
+            const uniqueVals = Array.from(new Set(overdueData.map(d => d[f.key]))).filter(Boolean);
+            uniqueVals.sort();
+
+            uniqueVals.forEach(v => {
+                const opt = document.createElement("option");
+                opt.value = v;
+                opt.innerText = v;
+                selectElem.appendChild(opt);
+            });
+
+            selectElem.value = currentVal && uniqueVals.includes(currentVal) ? currentVal : "ALL";
+        });
+    }
+
+    // 3. 控制介面邏輯
+    function toggleRatioShowAll() { isRatioShowAll = !isRatioShowAll; renderDynamicRatioAnalysisTable(); }
+
+    function filterAndScrollToDashboard(plantVal, ageVal, locationVal) {
+        const secBody = document.getElementById('sec-3-body');
+        const secBtn = document.getElementById('sec-3-btn');
+        if (secBody.style.display === "none") {
+            secBody.style.display = "block";
+            secBtn.innerText = "➖ 收合區塊";
+        }
+
+        document.getElementById("filter-plant").value = plantVal || "ALL";
+        document.getElementById("filter-age").value = ageVal || "ALL";
+        document.getElementById("filter-location").value = locationVal || "ALL";
+        document.getElementById("filter-region").value = "ALL";
+        document.getElementById("filter-item").value = "ALL";
+        document.getElementById("filter-batch").value = "ALL";
+
+        applyFilters();
+        document.getElementById('sec-dashboard-anchor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function openNoteModal(rowId) {
+        const item = overdueData.find(d => d.id === rowId);
+        if (item) {
+            document.getElementById("modalTargetRowId").value = rowId;
+            document.getElementById("modalTargetInfo").innerHTML = `
+                <strong>👤 責任業務：</strong>${item.sales} | <strong>🏭 廠區：</strong>${item.plant} | <strong>📍 地區：</strong>${item.region} | <strong>🏢 LOCATION：</strong>${item.location}<br>
+                <strong>🏬 倉庫名稱：</strong>${item.wh} | <strong>📦 料號：</strong>${item.item} | <strong>🏷️ 批號：</strong>${item.batch}<br>
+                <strong>📊 久置數量：</strong>${item.qty.toFixed(2)} MT | <strong>⏳ 庫齡：</strong>${item.age}
+            `;
+            renderHistoryList(item.history);
+            document.getElementById("newNoteInputBox").style.display = "none";
+            document.getElementById("newNoteTextarea").value = "";
+            document.getElementById("noteModalOverlay").style.display = "flex";
+        }
+    }
+
+    function renderHistoryList(historyArr) {
+        const container = document.getElementById("historyListContainer");
+        container.innerHTML = "";
+        if (!historyArr || historyArr.length === 0) {
+            container.innerHTML = `<div style="color:#94a3b8; font-size:12.5px; padding:10px 0;">尚無歷史處置說明，請點擊「＋ 新增說明列」開始填寫。</div>`;
+            return;
+        }
+        historyArr.forEach((h, idx) => {
+            const div = document.createElement("div");
+            div.className = "history-item";
+            div.innerHTML = `
+                <div class="history-time">⏱️ 紀錄時間：${h.time} (第 ${idx + 1} 筆)</div>
+                <div class="history-text">${h.note}</div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function showNewNoteInput() {
+        document.getElementById("newNoteInputBox").style.display = "block";
+        document.getElementById("newNoteTextarea").focus();
+    }
+
+    function saveNewHistoryRow() {
+        const rowId = parseInt(document.getElementById("modalTargetRowId").value);
+        const textElem = document.getElementById("newNoteTextarea");
+        const userNote = textElem.value.trim();
+
+        if (!userNote) { alert("⚠️ 請輸入處置說明內容後再進行儲存！"); return; }
+
+        const item = overdueData.find(d => d.id === rowId);
+        if (item) {
+            const now = new Date();
+            const timeStr = now.getFullYear() + '-' +
+                            String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                            String(now.getDate()).padStart(2, '0') + ' ' +
+                            String(now.getHours()).padStart(2, '0') + ':' +
+                            String(now.getMinutes()).padStart(2, '0') + ':' +
+                            String(now.getSeconds()).padStart(2, '0');
+
+            item.history.push({ note: userNote, time: timeStr });
+            textElem.value = "";
+            document.getElementById("newNoteInputBox").style.display = "none";
+            renderHistoryList(item.history);
+            renderTable();
+            renderDynamicRatioAnalysisTable();
+        }
+    }
+
+    function closeNoteModal() { document.getElementById("noteModalOverlay").style.display = "none"; }
+
+    function sortDataset(dataArr) {
+        return dataArr.sort((a, b) => {
+            let valA = a[currentSortColumn];
+            let valB = b[currentSortColumn];
+            if (currentSortColumn === 'age') { valA = ageRank[a.age] || 99; valB = ageRank[b.age] || 99; }
+            if (valA < valB) return currentSortAsc ? -1 : 1;
+            if (valA > valB) return currentSortAsc ? 1 : -1;
+            return 0;
+        });
+    }
+
+    function sortTable(columnKey) {
+        if (currentSortColumn === columnKey) { currentSortAsc = !currentSortAsc; }
+        else { currentSortColumn = columnKey; currentSortAsc = (columnKey === 'qty' || columnKey === 'amount' || columnKey === 'age') ? false : true; }
+        updateSortIcons();
+        renderTable();
+    }
+
+    function updateSortIcons() {
+        const cols = ['plant', 'sales', 'region', 'location', 'wh', 'item', 'batch', 'age', 'qty', 'amount'];
+        cols.forEach(col => {
+            const iconElem = document.getElementById(`sort-${col}`);
+            if (iconElem) {
+                if (col === currentSortColumn) {
+                    iconElem.innerText = currentSortAsc ? "▲" : "▼";
+                    iconElem.style.color = "#fbbf24";
+                } else {
+                    iconElem.innerText = "⇅";
+                    iconElem.style.color = "#ffffff";
+                }
+            }
+        });
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById("table-body");
+        tbody.innerHTML = "";
+
+        let totalQty = 0;
+        let totalAmt = 0;
+
+        currentFilteredData.forEach(row => {
+            totalQty += row.qty;
+            totalAmt += row.amount;
+        });
+
+        document.getElementById("kpi-qty").innerText = totalQty.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " MT";
+        document.getElementById("kpi-amount").innerText = "$" + totalAmt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById("kpi-count").innerText = currentFilteredData.length + " 筆";
+
+        if (currentFilteredData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="11" style="color:#94a3b8; padding:20px;">⚠️ 無符合目前篩選條件的久置資料</td></tr>`;
+            document.getElementById("more-btn-container").style.display = "none";
+            return;
+        }
+
+        const sortedData = sortDataset([...currentFilteredData]);
+        const displayRows = isShowAll ? sortedData : sortedData.slice(0, 10);
+
+        displayRows.forEach(row => {
+            const badgeClass = getAgeBadgeClass(row.age);
+            const historyCount = row.history ? row.history.length : 0;
+            const hasNoteClass = historyCount > 0 ? "has-note" : "";
+            const btnText = historyCount > 0 ? `📝 已有 ${historyCount} 筆說明` : "✏️ 填寫說明";
+            const lastTime = historyCount > 0 ? `<div style="font-size:10.5px; color:#64748b; margin-top:2px;">⏱️ 最新: ${row.history[historyCount - 1].time}</div>` : "";
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="text-bold">${row.plant}</td>
+                <td><span class="badge-sales">${row.sales}</span></td>
+                <td>${row.region}</td>
+                <td>${row.location}</td>
+                <td>${row.wh}</td>
+                <td class="text-bold" style="color:#1f4e78;">${row.item}</td>
+                <td>${row.batch}</td>
+                <td><span class="badge-age ${badgeClass}">${row.age}</span></td>
+                <td class="text-right text-bold">${row.qty.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td class="text-right">$${row.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td>
+                    <button class="btn-open-popup ${hasNoteClass}" onclick="openNoteModal(${row.id})">${btnText}</button>
+                    ${lastTime}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        const btnContainer = document.getElementById("more-btn-container");
+        const btnToggle = document.getElementById("btn-toggle-more");
+
+        if (currentFilteredData.length > 10) {
+            btnContainer.style.display = "block";
+            btnToggle.innerText = isShowAll ? "👆 收合明細 (僅顯示前 10 筆)" : `👇 看更多明細 (展開其餘 ${currentFilteredData.length - 10} 筆資料)`;
+        } else {
+            btnContainer.style.display = "none";
+        }
+    }
+
+    function applyFilters() {
+        const pVal = document.getElementById("filter-plant").value;
+        const rVal = document.getElementById("filter-region").value;
+        const lVal = document.getElementById("filter-location").value;
+        const iVal = document.getElementById("filter-item").value;
+        const bVal = document.getElementById("filter-batch").value;
+        const aVal = document.getElementById("filter-age").value;
+
+        currentFilteredData = overdueData.filter(item => {
+            const matchPlant = (pVal === "ALL" || item.plant === pVal);
+            const matchRegion = (rVal === "ALL" || item.region === rVal);
+            const matchLoc = (lVal === "ALL" || item.location === lVal);
+            const matchItem = (iVal === "ALL" || item.item === iVal);
+            const matchBatch = (bVal === "ALL" || item.batch === bVal);
+            const matchAge = (aVal === "ALL" || item.age === aVal);
+            return matchPlant && matchRegion && matchLoc && matchItem && matchBatch && matchAge;
+        });
+
+        isShowAll = false;
+        renderTable();
+    }
+
+    function toggleShowAll() { isShowAll = !isShowAll; renderTable(); }
+
+    function resetFilters() {
+        document.getElementById("filter-plant").value = "ALL";
+        document.getElementById("filter-region").value = "ALL";
+        document.getElementById("filter-location").value = "ALL";
+        document.getElementById("filter-item").value = "ALL";
+        document.getElementById("filter-batch").value = "ALL";
+        document.getElementById("filter-age").value = "ALL";
+        applyFilters();
+    }
+
+    function toggleSection(bodyId, btnId) {
+        const bodyElem = document.getElementById(bodyId);
+        const btnElem = document.getElementById(btnId);
+        if (bodyElem.style.display === "none") {
+            bodyElem.style.display = "block";
+            btnElem.innerText = "➖ 收合區塊";
+        } else {
+            bodyElem.style.display = "none";
+            btnElem.innerText = "➕ 展開區塊";
+        }
+    }
+
+    function initDynamicDashboard() {
+        populateFilterDropdowns();
+        renderDynamicBaselineSummary();
+        renderDynamicRatioAnalysisTable();
+        applyFilters();
+    }
+
+    window.onload = initDynamicDashboard;
+</script>
+
+</body>
+</html>
