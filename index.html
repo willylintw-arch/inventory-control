@@ -2,8 +2,12 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>海外倉久置庫存與處理管理表（資料去敏版）</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: 'PingFang TC', 'Microsoft JhengHei', 'Helvetica Neue', Arial, sans-serif;
             background-color: #f4f6f9;
@@ -14,7 +18,7 @@
             font-size: 14.5px;
         }
         .email-container {
-            width: 96vw;
+            width: 100%;
             max-width: 1400px;
             margin: 0 auto;
             background-color: #ffffff;
@@ -23,6 +27,8 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             border: 1px solid #e1e4e8;
         }
+        
+        /* ⭐️ Header 響應式排版 */
         .header {
             background: linear-gradient(135deg, #183c5e 0%, #254a7c 100%);
             color: #ffffff;
@@ -30,10 +36,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
         }
         .header-title-box h1 {
             margin: 0 0 6px 0;
-            font-size: 24px;
+            font-size: clamp(20px, 2vw, 24px);
             font-weight: 700;
             letter-spacing: 0.5px;
         }
@@ -42,12 +50,12 @@
             color: #b0cbe8;
         }
         
-        /* ⭐️ 商務專業融合風格：國外倉類別 Segment Control 區塊 */
+        /* ⭐️ 商務專業融合風格 Segment Control */
         .header-warehouse-type {
             display: flex;
             align-items: center;
             gap: 12px;
-            background: rgba(15, 35, 56, 0.5); /* 深色融合內嵌背景 */
+            background: rgba(15, 35, 56, 0.5);
             padding: 6px 8px 6px 16px;
             border-radius: 30px;
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -85,7 +93,6 @@
             color: #ffffff;
             background-color: rgba(255, 255, 255, 0.08);
         }
-        /* 選中狀態：亮黃金質感 + 專業深色文字 + 微立體陰影 */
         .wh-type-btn.active {
             background: linear-gradient(180deg, #fcd34d 0%, #fbbf24 100%) !important;
             color: #0f2942 !important;
@@ -132,6 +139,7 @@
             border-radius: 12px;
             font-weight: bold;
             transition: all 0.2s;
+            white-space: nowrap;
         }
         .section-header:hover .btn-collapse {
             background-color: #1f4e78;
@@ -141,6 +149,7 @@
             transition: max-height 0.3s ease-out;
         }
 
+        /* ⭐️ 兩欄網格動態適應 */
         .merged-grid {
             display: flex;
             gap: 20px;
@@ -150,6 +159,7 @@
         .merged-col-left {
             flex: 1.1;
             background-color: #ffffff;
+            min-width: 0;
         }
         .merged-col-right {
             flex: 0.9;
@@ -160,17 +170,20 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            min-width: 0;
         }
 
         .table-responsive {
             width: 100%;
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 14px;
             table-layout: fixed;
+            min-width: 600px;
         }
         th {
             background-color: #2f5597;
@@ -222,6 +235,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         .table-title {
             font-size: 16px;
@@ -332,9 +347,11 @@
             display: flex;
             gap: 12px;
             margin-top: 10px;
+            flex-wrap: wrap;
         }
         .region-card {
             flex: 1;
+            min-width: 140px;
             background: #ffffff;
             padding: 12px 14px;
             border-radius: 6px;
@@ -367,10 +384,11 @@
             justify-content: center;
             align-items: center;
             z-index: 9999;
+            padding: 15px;
         }
         .modal-box {
             background-color: #ffffff;
-            width: 92%; max-width: 680px;
+            width: min(92vw, 680px);
             border-radius: 8px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.25);
             overflow: hidden;
@@ -426,18 +444,25 @@
         .age-151-210 { background-color: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
         .age-210-plus { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; font-weight: 700; }
 
+        /* ⭐️ 篩選面板自適應網格 */
         .filter-panel {
             background-color: #f0f4f8; border: 1px solid #cbd5e1; border-radius: 8px; padding: 22px 26px; margin-bottom: 20px;
         }
-        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin-bottom: 18px; }
+        .filter-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 16px; 
+            margin-bottom: 18px; 
+        }
         .filter-group { display: flex; flex-direction: column; }
         .filter-group label { font-size: 13.5px; font-weight: bold; color: #1f4e78; margin-bottom: 6px; }
         .filter-group select {
             padding: 9px 12px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 14px; background-color: #ffffff; color: #333333; outline: none;
         }
         .filter-group select:focus { border-color: #2f5597; box-shadow: 0 0 0 2px rgba(47, 85, 151, 0.2); }
-        .kpi-cards { display: flex; gap: 18px; margin-bottom: 15px; }
-        .kpi-card { flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 16px; text-align: center; }
+        
+        .kpi-cards { display: flex; gap: 18px; margin-bottom: 15px; flex-wrap: wrap; }
+        .kpi-card { flex: 1; min-width: 180px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 16px; text-align: center; }
         .kpi-title { font-size: 13px; color: #64748b; }
         .kpi-value { font-size: 22px; font-weight: bold; color: #1f4e78; margin-top: 4px; }
         .btn-reset {
@@ -452,6 +477,22 @@
         .btn-more:hover { background-color: #163754; transform: translateY(-1px); }
         
         .footer { background-color: #f8f9fa; border-top: 1px solid #e1e4e8; padding: 16px 30px; font-size: 13px; color: #6c757d; text-align: center; }
+
+        /* ⭐️ RWD 響應式設備（手機、平板、小螢幕筆電）適應規則 */
+        @media (max-width: 992px) {
+            .merged-grid {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .header { padding: 16px 20px; flex-direction: column; align-items: flex-start; }
+            .header-warehouse-type { width: 100%; justify-content: space-between; }
+            .content { padding: 16px 20px; }
+            .filter-panel { padding: 16px; }
+            .kpi-value { font-size: 18px; }
+        }
     </style>
 </head>
 <body>
@@ -533,7 +574,7 @@
                     💡 <strong>提示：</strong>本表所有久置總量、比例、已填寫筆數及最新時間戳記均由原始明細資料自動動態運算產生。
                 </p>
                 <div class="table-responsive">
-                    <table id="ratio-analysis-table">
+                    <table id="ratio-analysis-table" style="min-width: 800px;">
                         <thead>
                             <tr>
                                 <th style="width: 14%;">廠區</th>
@@ -626,7 +667,7 @@
             </div>
 
             <div class="table-responsive">
-                <table id="analysis-table">
+                <table id="analysis-table" style="min-width: 1000px;">
                     <thead>
                         <tr>
                             <th onclick="sortTable('plant')">廠區 <span class="sort-icon" id="sort-plant">⇅</span></th>
@@ -767,7 +808,6 @@
         return worstAge;
     }
 
-    // ⭐️ 切換國外倉類別按鈕
     function selectWarehouseType(btnElem) {
         document.querySelectorAll('.wh-type-btn').forEach(btn => btn.classList.remove('active'));
         btnElem.classList.add('active');
