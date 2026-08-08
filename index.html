@@ -113,7 +113,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 13px;
-            table-layout: auto;
+            table-layout: fixed;
         }
         th {
             background-color: #2f5597;
@@ -135,6 +135,7 @@
         td {
             padding: 8px 10px;
             border-bottom: 1px solid #e9ecef;
+            border-right: 1px solid #f1f5f9;
             text-align: center;
             white-space: nowrap;
         }
@@ -431,11 +432,11 @@
                     <table id="ratio-analysis-table">
                         <thead>
                             <tr>
-                                <th>來源廠區</th>
-                                <th>久置庫齡區間</th>
-                                <th>倉庫名稱 (Warehouse)</th>
-                                <th>久置數量 (MT)</th>
-                                <th>久置庫齡比例 (%) [包含處置說明填寫進度與最新時間]</th>
+                                <th style="width: 14%;">來源廠區</th>
+                                <th style="width: 14%;">久置庫齡區間</th>
+                                <th style="width: 24%;">倉庫名稱 (Warehouse)</th>
+                                <th style="width: 14%;">久置數量 (MT)</th>
+                                <th style="width: 34%;">久置庫齡比例 (%) [包含處置說明填寫進度與最新時間]</th>
                             </tr>
                         </thead>
                         <tbody id="ratio-analysis-tbody">
@@ -453,14 +454,13 @@
 
         </div>
 
-        <!-- Section 2: Updated Inventory Management Dashboard (庫存管理儀表板) -->
+        <!-- Section 2: Updated Inventory Management Dashboard -->
         <div class="section-header" id="sec-dashboard-anchor" onclick="toggleSection('sec-3-body', 'sec-3-btn')">
             <div class="section-title">🔍 二、庫存管理儀表板 (動態多條件篩選與排序)</div>
             <span class="btn-collapse" id="sec-3-btn">➖ 收合區塊</span>
         </div>
         <div id="sec-3-body" class="collapsible-body">
             
-            <!-- Control Panel -->
             <div class="filter-panel">
                 <div class="filter-grid">
                     <div class="filter-group">
@@ -494,7 +494,6 @@
                     </div>
                 </div>
 
-                <!-- KPI Cards -->
                 <div class="kpi-cards">
                     <div class="kpi-card">
                         <div class="kpi-title">篩選後久置總量 (MT)</div>
@@ -515,7 +514,6 @@
                 </div>
             </div>
 
-            <!-- Table Top Title Label -->
             <div class="table-top-header">
                 <div class="table-title">📋 久置庫存明細</div>
                 <div style="font-size: 12px; color: #64748b;">
@@ -523,7 +521,6 @@
                 </div>
             </div>
 
-            <!-- Detail Table -->
             <div class="table-responsive">
                 <table id="analysis-table">
                     <thead>
@@ -568,7 +565,6 @@
 
     </div>
 
-    <!-- Footer -->
     <div class="footer">
         此網頁為 GitHub Pages 互動展示頁面，已完成全資料去敏化處理。
     </div>
@@ -653,7 +649,6 @@
         return "age-60-120";
     }
 
-    // 2. 動態繪製與修正排版
     function renderDynamicBaselineSummary() {
         const grandTotalQty = overdueData.reduce((sum, d) => sum + d.qty, 0);
         let plantRegionMap = {};
@@ -729,7 +724,7 @@
         chartContainer.innerHTML = chartHtml;
     }
 
-    // ⭐️【重點修復】重新構造子表格動態跨行 (Rowspan) 邏輯，避免欄位跑位
+    // ⭐️ 核心修正：嚴格維護固定 5 個 td 欄位結構，消除縱向對齊錯位
     function renderDynamicRatioAnalysisTable() {
         const grandTotalQty = overdueData.reduce((sum, d) => sum + d.qty, 0);
         let groupsMap = {};
@@ -751,73 +746,94 @@
             return b.totalQty - a.totalQty;
         });
 
-        // 依展收狀態決定呈現清單
         const filteredGroupList = isRatioShowAll ? groupList : groupList.filter(g => isOver151Days(g.age));
+
+        // 按廠區聚合
+        let plantGroups = {};
+        filteredGroupList.forEach(g => {
+            if (!plantGroups[g.plant]) plantGroups[g.plant] = [];
+            plantGroups[g.plant].push(g);
+        });
 
         const tbody = document.getElementById("ratio-analysis-tbody");
         tbody.innerHTML = "";
 
-        // 精確統計「實際出現在畫面上」的廠區行數
-        let plantSpanMap = {};
-        filteredGroupList.forEach(g => {
-            plantSpanMap[g.plant] = (plantSpanMap[g.plant] || 0) + 1;
-        });
+        // 按廠區名稱排序輸出（確保廠區 A 在上、廠區 B 在下）
+        const plantNames = Object.keys(plantGroups).sort();
 
-        let renderedPlantTracker = {};
+        plantNames.forEach(plantName => {
+            const items = plantGroups[plantName];
+            const rowSpan = items.length;
 
-        filteredGroupList.forEach(g => {
-            const totalCount = g.items.length;
-            let filledCount = 0;
-            let latestTimestamp = "";
+            items.forEach((g, idx) => {
+                const totalCount = g.items.length;
+                let filledCount = 0;
+                let latestTimestamp = "";
 
-            g.items.forEach(r => {
-                if (r.history && r.history.length > 0) {
-                    filledCount++;
-                    const lastH = r.history[r.history.length - 1];
-                    if (!latestTimestamp || lastH.time > latestTimestamp) { latestTimestamp = lastH.time; }
+                g.items.forEach(r => {
+                    if (r.history && r.history.length > 0) {
+                        filledCount++;
+                        const lastH = r.history[r.history.length - 1];
+                        if (!latestTimestamp || lastH.time > latestTimestamp) { latestTimestamp = lastH.time; }
+                    }
+                });
+
+                let statusHtml = (filledCount === 0) 
+                    ? `<span class="status-badge status-none">🔴 未填寫 (${filledCount}/${totalCount})</span>`
+                    : (filledCount < totalCount)
+                    ? `<span class="status-badge status-partial">🟡 部分填寫 (${filledCount}/${totalCount})</span>`
+                    : `<span class="status-badge status-full">🟢 已完成 (${filledCount}/${totalCount})</span>`;
+
+                const ratioVal = grandTotalQty > 0 ? ((g.totalQty / grandTotalQty) * 100).toFixed(2) : "0.00";
+                const timeDisplay = latestTimestamp ? `⏱️ 最新: ${latestTimestamp}` : `⏱️ 尚無最新回覆`;
+                const badgeClass = getAgeBadgeClass(g.age);
+
+                const tr = document.createElement("tr");
+
+                // 第一行：生成 5 個 <td>（含 rowspan 廠區欄）
+                if (idx === 0) {
+                    const bgStyle = (plantName.includes("廠區 B")) ? "background-color: #fafbfc;" : "";
+                    tr.innerHTML = `
+                        <td rowspan="${rowSpan}" class="text-bold" style="vertical-align: middle; ${bgStyle}">${plantName}</td>
+                        <td><span class="badge-age ${badgeClass}">${g.age}</span></td>
+                        <td>${g.wh}</td>
+                        <td class="text-right text-bold">${g.totalQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                        <td class="text-right">
+                            <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px;">
+                                <div style="text-align:right;">
+                                    <div>${statusHtml} <span style="font-size:11.5px; color:#475569;">(${filledCount}/${totalCount} 筆)</span></div>
+                                    <div style="font-size:10.5px; color:#64748b;">${timeDisplay}</div>
+                                </div>
+                                <div style="display:inline-flex; align-items:center;">
+                                    <div class="mini-bar-wrapper"><div class="mini-bar-fill" style="width: ${parseFloat(ratioVal)}%;"></div></div>
+                                    <button class="ratio-link-btn" onclick="filterAndScrollToDashboard('${g.plant}', '${g.age}', '${g.location}')">👉 ${ratioVal}%</button>
+                                </div>
+                            </div>
+                        </td>
+                    `;
+                } 
+                // 非第一行：生成 4 個 <td>（吃第一行的 rowspan）
+                else {
+                    tr.innerHTML = `
+                        <td><span class="badge-age ${badgeClass}">${g.age}</span></td>
+                        <td>${g.wh}</td>
+                        <td class="text-right text-bold">${g.totalQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                        <td class="text-right">
+                            <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px;">
+                                <div style="text-align:right;">
+                                    <div>${statusHtml} <span style="font-size:11.5px; color:#475569;">(${filledCount}/${totalCount} 筆)</span></div>
+                                    <div style="font-size:10.5px; color:#64748b;">${timeDisplay}</div>
+                                </div>
+                                <div style="display:inline-flex; align-items:center;">
+                                    <div class="mini-bar-wrapper"><div class="mini-bar-fill" style="width: ${parseFloat(ratioVal)}%;"></div></div>
+                                    <button class="ratio-link-btn" onclick="filterAndScrollToDashboard('${g.plant}', '${g.age}', '${g.location}')">👉 ${ratioVal}%</button>
+                                </div>
+                            </div>
+                        </td>
+                    `;
                 }
+                tbody.appendChild(tr);
             });
-
-            let statusHtml = (filledCount === 0) 
-                ? `<span class="status-badge status-none">🔴 未填寫 (${filledCount}/${totalCount})</span>`
-                : (filledCount < totalCount)
-                ? `<span class="status-badge status-partial">🟡 部分填寫 (${filledCount}/${totalCount})</span>`
-                : `<span class="status-badge status-full">🟢 已完成 (${filledCount}/${totalCount})</span>`;
-
-            const ratioVal = grandTotalQty > 0 ? ((g.totalQty / grandTotalQty) * 100).toFixed(2) : "0.00";
-            const timeDisplay = latestTimestamp ? `⏱️ 最新: ${latestTimestamp}` : `⏱️ 尚無最新回覆`;
-            const badgeClass = getAgeBadgeClass(g.age);
-
-            const tr = document.createElement("tr");
-
-            // 嚴格對齊 5 個 <td> 結構
-            let plantTd = "";
-            if (!renderedPlantTracker[g.plant]) {
-                renderedPlantTracker[g.plant] = true;
-                const rowSpan = plantSpanMap[g.plant];
-                const bgStyle = (g.plant.includes("廠區 B")) ? "background-color: #f8f9fa;" : "";
-                plantTd = `<td rowspan="${rowSpan}" class="text-bold" style="vertical-align: middle; ${bgStyle}">${g.plant}</td>`;
-            }
-
-            tr.innerHTML = `
-                ${plantTd}
-                <td><span class="badge-age ${badgeClass}">${g.age}</span></td>
-                <td>${g.wh}</td>
-                <td class="text-right text-bold">${g.totalQty.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                <td class="text-right">
-                    <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px;">
-                        <div style="text-align:right;">
-                            <div>${statusHtml} <span style="font-size:11.5px; color:#475569;">(${filledCount}/${totalCount} 筆)</span></div>
-                            <div style="font-size:10.5px; color:#64748b;">${timeDisplay}</div>
-                        </div>
-                        <div style="display:inline-flex; align-items:center;">
-                            <div class="mini-bar-wrapper"><div class="mini-bar-fill" style="width: ${parseFloat(ratioVal)}%;"></div></div>
-                            <button class="ratio-link-btn" onclick="filterAndScrollToDashboard('${g.plant}', '${g.age}', '${g.location}')">👉 ${ratioVal}%</button>
-                        </div>
-                    </div>
-                </td>
-            `;
-            tbody.appendChild(tr);
         });
 
         const btnToggle = document.getElementById("btn-toggle-ratio-more");
@@ -858,7 +874,6 @@
         });
     }
 
-    // 3. 控制介面邏輯
     function toggleRatioShowAll() { isRatioShowAll = !isRatioShowAll; renderDynamicRatioAnalysisTable(); }
 
     function filterAndScrollToDashboard(plantVal, ageVal, locationVal) {
